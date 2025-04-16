@@ -41,6 +41,8 @@ interface Room {
   votes: Vote;
   revealed: boolean;
   users: Users;
+  adminLeaving?: boolean;
+  adminLeavingTimestamp?: string;
 }
 
 // Renk paleti - daha canlı ve doygun renkler
@@ -137,6 +139,16 @@ export default function RoomPage() {
       
       if (docSnap.exists()) {
         const roomData = docSnap.data() as Room;
+        
+        // Admin çıkış yapıyor mesajını kontrol et
+        if (roomData.adminLeaving && !userSessionRef.current.isLeaving) {
+          // Admin odayı kapatıyor, kullanıcıyı bilgilendir ve ana sayfaya yönlendir
+          toast.error(t.room.adminClosingRoom);
+          userSessionRef.current.isLeaving = true;
+          router.push('/');
+          return;
+        }
+        
         setRoom(roomData);
         setIsLoading(false);
         
@@ -187,14 +199,18 @@ export default function RoomPage() {
           return;
         }
         
+        // Eğer daha önce bir odamız vardı ve şimdi yoksa (silindi)
+        if (room && !userSessionRef.current.isLeaving) {
+          // Admin odayı silmiş olabilir, ana sayfaya yönlendir
+          toast.error(t.room.roomClosed);
+          userSessionRef.current.isLeaving = true;
+          router.push('/');
+          return;
+        }
+        
+        // İlk yükleme sırasında oda yoksa roomNotFound göster
         setRoomNotFound(true);
         setIsLoading(false);
-        
-        // Eğer önceden bir oda varsa ve şimdi yok ise, muhtemelen silindi
-        if (userSessionRef.current.initialized && !userSessionRef.current.isLeaving) {
-          toast.error(t.room.roomClosed);
-          router.push('/');
-        }
       }
     });
     
@@ -352,6 +368,22 @@ export default function RoomPage() {
       if (isAdmin) {
         // Admin için doğrudan odayı sil
         try {
+          if (room?.users && Object.values(room.users).length > 1) {
+            // Odada başka kullanıcılar varsa, uyarı mesajı göndermeyi dene
+            try {
+              // Diğer kullanıcıları uyarmak için özel bir flag ekle
+              await updateDoc(roomRef, {
+                adminLeaving: true,
+                adminLeavingTimestamp: new Date().toISOString()
+              });
+              
+              // Diğer kullanıcıların uyarıyı almalarına zaman tanı
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (error) {
+              console.log('Error sending admin leaving message:', error);
+            }
+          }
+          
           // Odayı silmeyi dene
           await deleteDoc(roomRef);
           toast.success(t.room.roomClosed);

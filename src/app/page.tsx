@@ -169,7 +169,13 @@ export default function Home() {
             } backdrop-blur-lg rounded-2xl p-8 space-y-6 shadow-xl border ${
               theme === 'dark' ? 'border-slate-700/50' : 'border-purple-100'
             }`}>
-              <div className="space-y-6">
+              <form 
+                className="space-y-6" 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleCreateRoom();
+                }}
+              >
                 <div className="relative">
                   <label className={`block text-sm font-medium mb-1 ${
                     theme === 'dark' ? 'text-slate-300' : 'text-gray-700'
@@ -199,6 +205,7 @@ export default function Home() {
                     {Object.entries(scrumScales).map(([key, scale]) => (
                       <button
                         key={key}
+                        type="button"
                         onClick={() => setScaleType(key)}
                         className={`relative h-20 rounded-lg font-medium transition-all overflow-hidden ${
                           scaleType === key
@@ -245,7 +252,7 @@ export default function Home() {
                 </div>
 
                 <button
-                  onClick={handleCreateRoom}
+                  type="submit"
                   disabled={isCreating}
                   className={`w-full h-12 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 ${
                     theme === 'dark'
@@ -265,7 +272,7 @@ export default function Home() {
                     t.room.create
                   )}
                 </button>
-              </div>
+              </form>
             </div>
           </div>
 
