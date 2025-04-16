@@ -169,7 +169,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${
+                  <label className={`block text-sm font-medium mb-2 ${
                     theme === 'dark' ? 'text-slate-300' : 'text-gray-700'
                   }`}>
                     {t.room.pointScale}
