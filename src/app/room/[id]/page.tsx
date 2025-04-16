@@ -17,6 +17,8 @@ import { ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
 import PlayerCircle from '@/components/PlayerCircle';
 import { motion, AnimatePresence } from 'framer-motion';
 import RoomNotFound from '@/components/RoomNotFound';
+import ConfirmModal from '@/components/ConfirmModal';
+import ConfettiCelebration from '@/components/ConfettiCelebration';
 
 interface Vote {
   [key: string]: string;
@@ -62,7 +64,9 @@ export default function RoomPage() {
   const [selectedPoint, setSelectedPoint] = useState<string | null>(null);
   const [userName, setUserName] = useLocalStorage('planningPokerUserName', '');
   const [showNameModal, setShowNameModal] = useState(false);
+  const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [isLeavingRoom, setIsLeavingRoom] = useState(false);
   const [points, setPoints] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [roomNotFound, setRoomNotFound] = useState(false);
@@ -305,11 +309,43 @@ export default function RoomPage() {
       const isAdmin = currentUser?.isAdmin || false;
       
       if (isAdmin) {
+        // Kurucu odadan ayrılmak istiyor, önce onay modalı gösterelim
+        setShowLeaveConfirmModal(true);
+        return;
+      } 
+      
+      // Normal kullanıcı, onay modalı göstermeden doğrudan çıkış yap
+      await leaveRoomAction(false);
+    } catch (error) {
+      console.error('Error leaving room:', error);
+      toast.error(t.room.error || "Odadan çıkarken bir hata oluştu");
+    }
+  };
+
+  const leaveRoomAction = async (isAdmin: boolean) => {
+    if (!userSessionRef.current.userKey || !id) return;
+    
+    setIsLeavingRoom(true);
+    
+    try {
+      const roomId = id as string;
+      const roomRef = doc(db, 'rooms', roomId);
+      
+      if (isAdmin) {
         // Kurucu odadan ayrılıyor, odayı komple sil
         await deleteDoc(roomRef);
         toast.success(t.room.roomClosed || "Oda kapatıldı");
       } else {
         // Normal kullanıcı, sadece kullanıcıyı ve oyunu sil
+        const roomDoc = await getDoc(roomRef);
+        
+        if (!roomDoc.exists()) {
+          toast.error(t.room.roomNotFound || "Oda bulunamadı");
+          router.push('/');
+          return;
+        }
+        
+        const roomData = roomDoc.data();
         const updates: Record<string, ReturnType<typeof deleteField>> = {};
         
         // users objesinden kullanıcı anahtarını sil (deleteField kullan)
@@ -332,6 +368,9 @@ export default function RoomPage() {
     } catch (error) {
       console.error('Error leaving room:', error);
       toast.error(t.room.error || "Odadan çıkarken bir hata oluştu");
+    } finally {
+      setIsLeavingRoom(false);
+      setShowLeaveConfirmModal(false);
     }
   };
 
@@ -371,6 +410,14 @@ export default function RoomPage() {
 
   return (
     <main className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4`}>
+      {/* Konfeti Efekti */}
+      {room && (
+        <ConfettiCelebration 
+          votes={room.votes}
+          revealed={room.revealed}
+        />
+      )}
+      
       <Header />
       
       <div className="max-w-5xl mx-auto py-8 relative">
@@ -400,7 +447,7 @@ export default function RoomPage() {
               transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.2 }}
               style={{ maxHeight: "70vh", overflowY: "auto" }}
             >
-              <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 text-center`}>{t.common.voteResults || 'Oylama Sonuçları'}</h2>
+              <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 text-center`}>{t.common.voteResults}</h2>
               
               {/* Pie Chart ve Ortalama göster */}
               <div className="flex flex-col items-center">
@@ -539,6 +586,17 @@ export default function RoomPage() {
         showCancelButton={false}
         submitButtonText={t.room.joinRoom || 'Join Room'}
         loadingText={t.room.joining || 'Joining...'}
+      />
+
+      {/* Odadan Çıkış Onay Modalı */}
+      <ConfirmModal
+        isOpen={showLeaveConfirmModal}
+        onClose={() => setShowLeaveConfirmModal(false)}
+        onConfirm={() => leaveRoomAction(true)}
+        title={t.room.confirmLeave || "Odadan Çıkmayı Onayla"}
+        message={t.room.confirmLeaveAdmin || "Odadan çıkmak istediğinize emin misiniz? Oda kurucusu olduğunuz için çıkarsanız oda silinecektir."}
+        confirmButtonText={t.room.leaveRoom || "Odadan Çık"}
+        isLoading={isLeavingRoom}
       />
     </main>
   );
