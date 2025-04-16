@@ -76,7 +76,8 @@ export default function RoomPage() {
     sessionId: '',
     userKey: null as string | null,
     initialized: false,
-    checkingExistingUser: false
+    checkingExistingUser: false,
+    isLeaving: false // Kullanıcının odadan ayrıldığını takip et
   });
 
   // Yükleme timeout referansı
@@ -84,6 +85,11 @@ export default function RoomPage() {
 
   // Firestore session
   useEffect(() => {
+    if (userSessionRef.current.isLeaving) {
+      // Eğer kullanıcı çıkış yapıyorsa, Firestore işlemini yapmayı atla
+      return;
+    }
+    
     const roomId = id as string;
     
     // Her oturum için session id oluştur
@@ -124,6 +130,11 @@ export default function RoomPage() {
     checkRoomExists();
     
     const unsubscribe = onSnapshot(doc(db, 'rooms', roomId), async (docSnap) => {
+      if (userSessionRef.current.isLeaving) {
+        // Kullanıcı çıkış yapıyorsa, snapshot'ı işleme
+        return;
+      }
+      
       if (docSnap.exists()) {
         const roomData = docSnap.data() as Room;
         setRoom(roomData);
@@ -140,7 +151,7 @@ export default function RoomPage() {
         setPoints(getScaleValues(roomData.scaleType));
         
         // Sadece ilk kez veya userKey null ise kullanıcıyı kontrol et
-        if (roomData.users && !userSessionRef.current.checkingExistingUser) {
+        if (roomData.users && !userSessionRef.current.checkingExistingUser && !userSessionRef.current.isLeaving) {
           userSessionRef.current.checkingExistingUser = true;
           
           const userEntries = Object.entries(roomData.users);
@@ -157,11 +168,11 @@ export default function RoomPage() {
               setUserName((existingUser[1] as User).name);
             }
           }
-          else if (userName) {
+          else if (userName && !userSessionRef.current.isLeaving) {
             // Kullanıcı henüz odada değil ama adı var, ekle
             await addUserToFirestore(roomId, userName, userSessionRef.current.sessionId);
           }
-          else {
+          else if (!userSessionRef.current.isLeaving) {
             // Kullanıcı yok ve adı da yok, modal göster
             setShowNameModal(true);
           }
@@ -171,11 +182,16 @@ export default function RoomPage() {
         }
       } else {
         // Oda bulunamadı
+        if (userSessionRef.current.isLeaving) {
+          // Kullanıcı zaten çıkış yapıyorsa, roomNotFound'u gösterme
+          return;
+        }
+        
         setRoomNotFound(true);
         setIsLoading(false);
         
         // Eğer önceden bir oda varsa ve şimdi yok ise, muhtemelen silindi
-        if (userSessionRef.current.initialized) {
+        if (userSessionRef.current.initialized && !userSessionRef.current.isLeaving) {
           toast.error(t.room.roomClosed);
           router.push('/');
         }
@@ -325,6 +341,8 @@ export default function RoomPage() {
   const leaveRoomAction = async (isAdmin: boolean) => {
     if (!userSessionRef.current.userKey || !id) return;
     
+    // Kullanıcının çıkış yaptığını işaretle
+    userSessionRef.current.isLeaving = true;
     setIsLeavingRoom(true);
     
     try {
@@ -332,49 +350,80 @@ export default function RoomPage() {
       const roomRef = doc(db, 'rooms', roomId);
       
       if (isAdmin) {
-        // Kurucu odadan ayrılıyor, odayı komple sil
-        await deleteDoc(roomRef);
-        toast.success(t.room.roomClosed);
-      } else {
-        // Normal kullanıcı, sadece kullanıcıyı ve oyunu sil
-        const roomDoc = await getDoc(roomRef);
-        
-        if (!roomDoc.exists()) {
-          toast.error(t.room.roomNotFound);
+        // Admin için doğrudan odayı sil
+        try {
+          // Odayı silmeyi dene
+          await deleteDoc(roomRef);
+          toast.success(t.room.roomClosed);
+          
+          // Başarılı olursa localStorage'dan session ID'yi sil
+          localStorage.removeItem(`planningPokerSession_${roomId}`);
+          
+          // Ana sayfaya yönlendir
           router.push('/');
-          return;
+        } catch (error) {
+          console.error('Error deleting room:', error);
+          toast.error(t.room.error);
+          
+          // Hata olursa da çıkış yap
+          localStorage.removeItem(`planningPokerSession_${roomId}`);
+          router.push('/');
         }
-        
-        const roomData = roomDoc.data();
-        const updates: Record<string, ReturnType<typeof deleteField>> = {};
-        
-        // users objesinden kullanıcı anahtarını sil (deleteField kullan)
-        updates[`users.${userSessionRef.current.userKey}`] = deleteField();
-        
-        // Eğer kullanıcının oyu varsa, sil
-        if (userName && roomData.votes && roomData.votes[userName]) {
-          updates[`votes.${userName}`] = deleteField();
+      } else {
+        // Normal kullanıcı için kullanıcı bilgisini ve oylarını sil
+        try {
+          const roomDoc = await getDoc(roomRef);
+          
+          if (!roomDoc.exists()) {
+            toast.error(t.room.roomNotFound);
+            localStorage.removeItem(`planningPokerSession_${roomId}`);
+            router.push('/');
+            return;
+          }
+          
+          const roomData = roomDoc.data();
+          const updates: Record<string, ReturnType<typeof deleteField>> = {};
+          
+          // users objesinden kullanıcı anahtarını sil (deleteField kullan)
+          updates[`users.${userSessionRef.current.userKey}`] = deleteField();
+          
+          // Eğer kullanıcının oyu varsa, sil
+          if (userName && roomData.votes && roomData.votes[userName]) {
+            updates[`votes.${userName}`] = deleteField();
+          }
+          
+          // Firestore güncellemesini yap
+          await updateDoc(roomRef, updates);
+          toast.success(t.room.leftRoom);
+          
+          // Başarılı olursa localStorage'dan session ID'yi sil
+          localStorage.removeItem(`planningPokerSession_${roomId}`);
+          
+          // Ana sayfaya yönlendir
+          router.push('/');
+        } catch (error) {
+          console.error('Error removing user from room:', error);
+          toast.error(t.room.error);
+          
+          // Hata olursa da çıkış yap
+          localStorage.removeItem(`planningPokerSession_${roomId}`);
+          router.push('/');
         }
-        
-        await updateDoc(roomRef, updates);
-        toast.success(t.room.leftRoom);
       }
-      
-      // Session ID'yi sil
-      localStorage.removeItem(`planningPokerSession_${roomId}`);
-      
-      // Ana sayfaya yönlendir
-      router.push('/');
     } catch (error) {
-      console.error('Error leaving room:', error);
-        toast.error(t.room.error);
+      console.error('Error in leaveRoomAction:', error);
+      toast.error(t.room.error);
+      
+      // Genel bir hata durumunda da çıkış yap
+      localStorage.removeItem(`planningPokerSession_${id as string}`);
+      router.push('/');
     } finally {
       setIsLeavingRoom(false);
       setShowLeaveConfirmModal(false);
     }
   };
 
-  if (roomNotFound) {
+  if (roomNotFound && !userSessionRef.current.isLeaving) {
     return <RoomNotFound />;
   }
 
