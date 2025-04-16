@@ -503,7 +503,7 @@ export default function RoomPage() {
   };
 
   return (
-    <main className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4`}>
+    <main className={`min-h-screen max-h-screen overflow-hidden ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4`}>
       {/* Konfeti Efekti */}
       {room && (
         <ConfettiCelebration 
@@ -514,12 +514,16 @@ export default function RoomPage() {
       
       <Header />
       
-      <div className="max-w-5xl mx-auto py-8 relative">
+      <div className="w-screen h-[50vh] relative items-center justify-center">
         {/* Oda adı */}
         <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} text-center mb-6`}>{room.name}</h1>
         
         {/* Kullanıcı listesi ve butonlar */}
-        <div className="min-h-[60vh] flex items-center justify-center w-full overflow-visible">
+        <div className="flex items-center justify-center w-full h-[60vh] overflow-visible flex-wrap"
+        style={{
+          width: room.revealed ? '70%' : '100%',
+          padding: room.revealed ? '0 16px' : '0',
+        }}>
           <PlayerCircle 
             users={room.users}
             votes={room.votes}
@@ -534,12 +538,12 @@ export default function RoomPage() {
         <AnimatePresence>
           {room.revealed && (
             <motion.div 
-              className={`absolute top-1/2 right-[15%] w-[35%] -translate-y-1/2 ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white'} rounded-2xl shadow-xl p-6`}
+              className={`absolute top-[70%] right-[64px] w-[40%] md:w-[25%] transform -translate-y-1/2 ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white'} rounded-2xl shadow-xl p-6`}
               initial={{ opacity: 0, x: 200 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 200 }}
+              exit={{ opacity: 0, x: 100 }}
               transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.2 }}
-              style={{ maxHeight: "70vh", overflowY: "auto" }}
+              style={{ maxHeight: "60vh", overflowY: "auto" }}
             >
               <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 text-center`}>{t.common.voteResults}</h2>
               
