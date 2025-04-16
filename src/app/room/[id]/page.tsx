@@ -54,7 +54,9 @@ const COLORS = [
   '#00FF7F', // yeşil
   '#FF4500', // turuncu-kırmızı
   '#9932CC', // mor
-  '#FF8C00'  // turuncu
+  '#FF8C00', // turuncu
+  '#D4A76A', // kahve rengi (☕)
+  '#E879F9'  // mor-pembe (?)
 ];
 
 export default function RoomPage() {
@@ -497,9 +499,15 @@ export default function RoomPage() {
   })).sort((a, b) => parseFloat(a.point) - parseFloat(b.point)); // Puanlara göre sırala
 
   const calculateAverageScore = (votes: Vote): number => {
-    const totalVotes = Object.values(votes).length;
-    const totalScore = Object.values(votes).reduce((total, point) => total + parseFloat(point), 0);
-    return totalScore / totalVotes;
+    const validVotes = Object.values(votes).filter(vote => {
+      // Herhangi bir sayısal olmayan değeri veya NaN sonucu veren değerleri filtrele
+      return !isNaN(parseFloat(vote)) && isFinite(parseFloat(vote));
+    });
+    
+    if (validVotes.length === 0) return 0;
+    
+    const totalScore = validVotes.reduce((total, point) => total + parseFloat(point), 0);
+    return totalScore / validVotes.length;
   };
 
   return (
@@ -568,10 +576,19 @@ export default function RoomPage() {
                         animationBegin={0}
                       >
                         {voteData.map((entry, i) => {
-                          const colorIndex = Math.abs(parseInt(entry.point)) % COLORS.length;
+                          // Kahve fincanı ve soru işareti için özel renkler kullan
+                          let colorIndex;
+                          if (entry.point === '☕') {
+                            colorIndex = 8; // Kahve rengi (COLORS[8])
+                          } else if (entry.point === '?') {
+                            colorIndex = 9; // Mor-pembe (COLORS[9])
+                          } else {
+                            colorIndex = Math.abs(parseInt(entry.point)) % 8; // İlk 8 rengi kullan
+                          }
+                          
                           return <Cell 
                             key={`cell-${i}`} 
-                            fill={COLORS[colorIndex]} 
+                            fill={COLORS[colorIndex]}
                             strokeWidth={1}
                             stroke={'rgba(255,255,255,0.6)'}
                           />;
@@ -586,7 +603,7 @@ export default function RoomPage() {
                         className="text-xs font-normal"
                         fill={theme === 'dark' ? '#9ca3af' : '#64748b'}
                       >
-                        Ortalama
+                        {t.common.average}
                       </text>
                       <text 
                         x="50%" 
@@ -605,7 +622,16 @@ export default function RoomPage() {
                 {/* Renk açıklamaları */}
                 <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mt-4">
                   {voteData.map((entry, i) => {
-                    const colorIndex = Math.abs(parseInt(entry.point)) % COLORS.length;
+                    // Kahve fincanı ve soru işareti için özel renkler kullan
+                    let colorIndex;
+                    if (entry.point === '☕') {
+                      colorIndex = 8; // Kahve rengi (COLORS[8])
+                    } else if (entry.point === '?') {
+                      colorIndex = 9; // Mor-pembe (COLORS[9])
+                    } else {
+                      colorIndex = Math.abs(parseInt(entry.point)) % 8; // İlk 8 rengi kullan
+                    }
+                    
                     return (
                       <motion.div 
                         key={`legend-${i}`} 
@@ -640,22 +666,23 @@ export default function RoomPage() {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/30 to-transparent">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-wrap gap-2 justify-center">
-            {points.map((point) => (
-              <button
-                key={point}
-                onClick={() => handleVote(point)}
-                className={`w-14 h-20 rounded-lg text-center font-medium transition-colors transform ${
-                  selectedPoint === point
-                    ? `${theme === 'dark' ? 'bg-indigo-600' : 'bg-indigo-500'} text-white -translate-y-3`
-                    : theme === 'dark'
-                      ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md'
-                } transition-transform duration-300`}
-                disabled={room.revealed}
-              >
-                {point}
-              </button>
-            ))}
+            {points.map((point) => {
+              return (
+                <button
+                  key={point}
+                  onClick={() => handleVote(point)}
+                  className={`w-14 h-20 rounded-lg text-center font-medium transition-colors transform ${
+                    selectedPoint === point
+                      ? `${theme === 'dark' ? 'bg-indigo-600' : 'bg-indigo-500'} text-white -translate-y-3`
+                      : theme === 'dark'
+                        ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md'
+                  } transition-transform duration-300`}
+                >
+                  {point}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

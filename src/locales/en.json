@@ -48,7 +48,8 @@
     "copyLink": "Copy link",
     "backToHome": "Back to Home",
     "voteText": "vote",
-    "votesText": "votes"
+    "votesText": "votes",
+    "average": "Average"
   },
   "room": {
     "roomName": "Room Name",

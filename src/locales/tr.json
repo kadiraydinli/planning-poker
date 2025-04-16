@@ -48,7 +48,8 @@
     "copyLink": "Bağlantıyı kopyala",
     "backToHome": "Ana Sayfaya Dön",
     "voteText": "oy",
-    "votesText": "oy"
+    "votesText": "oy",
+    "average": "Ortalama"
   },
   "room": {
     "roomName": "Oda Adı",
