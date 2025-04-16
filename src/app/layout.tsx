@@ -5,6 +5,7 @@ import Script from "next/script";
 
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import BetaBanner from "@/components/BetaBanner";
 
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <LanguageProvider>
+            <BetaBanner />
             {children}
             <Toaster />
           </LanguageProvider>
