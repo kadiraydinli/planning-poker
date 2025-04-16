@@ -1,14 +1,13 @@
+import React, { useState } from 'react';
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import React from 'react';
 
 interface NameModalProps {
   isOpen: boolean;
-  userName: string;
   isLoading: boolean;
   onClose: () => void;
-  onChangeName: (name: string) => void;
-  onSubmit: () => void;
+  onSubmit: (name: string) => void;
   showCancelButton?: boolean;
   submitButtonText?: string;
   loadingText?: string;
@@ -16,10 +15,8 @@ interface NameModalProps {
 
 export default function NameModal({
   isOpen,
-  userName,
   isLoading,
   onClose,
-  onChangeName,
   onSubmit,
   showCancelButton = true,
   submitButtonText,
@@ -27,6 +24,7 @@ export default function NameModal({
 }: NameModalProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
+  const [value, setValue] = useState('');
 
   if (!isOpen) return null;
 
@@ -50,8 +48,8 @@ export default function NameModal({
         
         <input
           type="text"
-          value={userName}
-          onChange={(e) => onChangeName(e.target.value)}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
           placeholder={t.room.yourName || 'Your Name'}
           className={`w-full h-12 px-4 rounded-lg border-2 focus:ring focus:ring-opacity-50 placeholder-gray-400 shadow-sm mb-4 ${
             theme === 'dark'
@@ -75,8 +73,8 @@ export default function NameModal({
           )}
           
           <button
-            onClick={onSubmit}
-            disabled={isLoading || !userName.trim()}
+            onClick={() => onSubmit(value)}
+            disabled={isLoading || !value?.trim()}
             className={`px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 ${
               theme === 'dark'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'

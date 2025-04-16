@@ -88,12 +88,13 @@ export default function Home() {
     }
   };
 
-  const handleJoinAsAdmin = async () => {
-    if (!userName.trim()) {
+  const handleJoinAsAdmin = async (name: string) => {
+    if (!name.trim()) {
       toast.error(t.room.enterNameFirst);
       return;
     }
 
+    setUserName(name);
     setIsJoining(true);
     try {
       const sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
@@ -101,7 +102,7 @@ export default function Home() {
         localStorage.setItem(`planningPokerSession_${roomId}`, sessionId);
       }
       
-      await joinRoomWithUserName(roomId, userName, sessionId);
+      await joinRoomWithUserName(roomId, name, sessionId);
     } catch (error) {
       console.error('Error joining room:', error);
       toast.error(t.room.errorJoining || 'Error joining room');
@@ -479,10 +480,8 @@ export default function Home() {
       {/* Kullanıcı Adı Modal */}
       <NameModal 
         isOpen={showNameModal}
-        userName={userName}
         isLoading={isJoining}
         onClose={() => setShowNameModal(false)}
-        onChangeName={(name) => setUserName(name)}
         onSubmit={handleJoinAsAdmin}
         submitButtonText={t.room.joinRoom || 'Join Room'}
         loadingText={t.room.joining || 'Joining...'}

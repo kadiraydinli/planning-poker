@@ -47,7 +47,8 @@
     "cancel": "İptal",
     "invitePlayers": "Oyuncuları Davet Et",
     "scanToJoin": "Katılmak için QR kodu tarayın",
-    "copyLink": "Linki kopyala"
+    "copyLink": "Linki kopyala",
+    "backToHome": "Ana Sayfaya Dön"
   },
   "room": {
     "roomName": "Oda Adı",
@@ -75,6 +76,9 @@
     "invitePlayers": "Oyuncuları Davet Et",
     "nextVoting": "Sonraki Oylama",
     "admin": "kurucu",
-    "you": "sen"
+    "you": "sen",
+    "roomNotFound": "Oda bulunamadı",
+    "roomClosed": "Oda kapatıldı",
+    "roomMayBeClosed": "Aradığınız oda mevcut değil veya kapatılmış olabilir."
   }
 } 

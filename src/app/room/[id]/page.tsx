@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, getDoc, deleteDoc, deleteField } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -15,6 +15,8 @@ import { nanoid } from 'nanoid';
 import NameModal from '@/components/NameModal';
 import { ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
 import PlayerCircle from '@/components/PlayerCircle';
+import { motion, AnimatePresence } from 'framer-motion';
+import RoomNotFound from '@/components/RoomNotFound';
 
 interface Vote {
   [key: string]: string;
@@ -39,7 +41,17 @@ interface Room {
   users: Users;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+// Renk paleti - daha canlı ve doygun renkler
+const COLORS = [
+  '#0066FF', // mavi
+  '#FFD700', // altın
+  '#FF1493', // pembe
+  '#00BFFF', // açık mavi
+  '#00FF7F', // yeşil
+  '#FF4500', // turuncu-kırmızı
+  '#9932CC', // mor
+  '#FF8C00'  // turuncu
+];
 
 export default function RoomPage() {
   const { id } = useParams();
@@ -49,10 +61,11 @@ export default function RoomPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<string | null>(null);
   const [userName, setUserName] = useLocalStorage('planningPokerUserName', '');
-  const [showNameInput, setShowNameInput] = useState(!userName);
   const [showNameModal, setShowNameModal] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [points, setPoints] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [roomNotFound, setRoomNotFound] = useState(false);
   
   // Kullanıcı session bilgilerini ref olarak sakla
   const userSessionRef = useRef({
@@ -62,24 +75,55 @@ export default function RoomPage() {
     checkingExistingUser: false
   });
 
+  // Yükleme timeout referansı
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Firestore session
   useEffect(() => {
     const roomId = id as string;
-    const sessionStorageKey = `planningPokerSession_${roomId}`;
     
-    // Session ID'yi yükle veya oluştur
-    let sessionId = localStorage.getItem(sessionStorageKey);
-    if (!sessionId) {
-      sessionId = nanoid(16);
-      localStorage.setItem(sessionStorageKey, sessionId);
+    // Her oturum için session id oluştur
+    if (!localStorage.getItem(`planningPokerSession_${roomId}`)) {
+      localStorage.setItem(`planningPokerSession_${roomId}`, nanoid(16));
     }
-    userSessionRef.current.sessionId = sessionId;
     
-    // Firestore listener başlat
+    userSessionRef.current.sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
+    
+    // Yükleme zaman aşımı için bir timer ayarla (3 saniye)
+    loadingTimeoutRef.current = setTimeout(() => {
+      if (isLoading) {
+        // Belirli bir süre sonra hala yükleme devam ediyorsa, odanın bulunamadığını varsayalım
+        setRoomNotFound(true);
+        setIsLoading(false);
+      }
+    }, 3000);
+    
+    // İlk olarak doğrudan odanın varlığını kontrol et
+    const checkRoomExists = async () => {
+      try {
+        const roomRef = doc(db, 'rooms', roomId);
+        const roomDoc = await getDoc(roomRef);
+        
+        if (!roomDoc.exists()) {
+          setRoomNotFound(true);
+          setIsLoading(false);
+          if (loadingTimeoutRef.current) {
+            clearTimeout(loadingTimeoutRef.current);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking room:', error);
+      }
+    };
+    
+    // Oda kontrolünü başlat
+    checkRoomExists();
+    
     const unsubscribe = onSnapshot(doc(db, 'rooms', roomId), async (docSnap) => {
       if (docSnap.exists()) {
         const roomData = docSnap.data() as Room;
         setRoom(roomData);
+        setIsLoading(false);
         
         // Kullanıcının oyu varsa seçili noktayı güncelleyelim
         if (userName && roomData.votes && roomData.votes[userName]) {
@@ -97,7 +141,7 @@ export default function RoomPage() {
           
           const userEntries = Object.entries(roomData.users);
           const existingUser = userEntries.find(([, user]) => 
-            user.sessionId === userSessionRef.current.sessionId
+            (user as User).sessionId === userSessionRef.current.sessionId
           );
           
           if (existingUser) {
@@ -105,8 +149,8 @@ export default function RoomPage() {
             userSessionRef.current.userKey = existingUser[0];
             
             // Kullanıcı adı yoksa ama session varsa, o kullanıcı adını kullan
-            if (!userName && existingUser[1].name) {
-              setUserName(existingUser[1].name);
+            if (!userName && (existingUser[1] as User).name) {
+              setUserName((existingUser[1] as User).name);
             }
           }
           else if (userName) {
@@ -121,11 +165,26 @@ export default function RoomPage() {
           userSessionRef.current.initialized = true;
           userSessionRef.current.checkingExistingUser = false;
         }
+      } else {
+        // Oda bulunamadı
+        setRoomNotFound(true);
+        setIsLoading(false);
+        
+        // Eğer önceden bir oda varsa ve şimdi yok ise, muhtemelen silindi
+        if (userSessionRef.current.initialized) {
+          toast.error(t.room.roomClosed || "Oda kapatıldı");
+          router.push('/');
+        }
       }
     });
     
-    return () => unsubscribe();
-  }, [id, userName]);
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+      unsubscribe();
+    };
+  }, [id, userName, isLoading]);
   
   // Kullanıcıyı odaya ekle
   const addUserToFirestore = async (roomId: string, name: string, sessionId: string) => {
@@ -154,12 +213,13 @@ export default function RoomPage() {
   };
 
   // Modal üzerinden kullanıcı katılımını işle
-  const handleJoinRoom = async () => {
-    if (!userName.trim()) {
+  const handleJoinRoom = async (name: string) => {
+    if (!name.trim()) {
       toast.error(t.room.enterNameFirst);
       return;
     }
 
+    setUserName(name);
     setIsJoining(true);
     try {
       const roomId = id as string;
@@ -167,7 +227,7 @@ export default function RoomPage() {
       if (!userSessionRef.current.userKey) {
         await addUserToFirestore(
           roomId, 
-          userName, 
+          name, 
           userSessionRef.current.sessionId
         );
       }
@@ -228,29 +288,58 @@ export default function RoomPage() {
     if (!userSessionRef.current.userKey || !id) return;
     
     try {
-      // Mevcut kullanıcıyı Firebase'den sil
-      const roomRef = doc(db, 'rooms', id as string);
+      const roomId = id as string;
+      const roomRef = doc(db, 'rooms', roomId);
+      const roomDoc = await getDoc(roomRef);
       
-      // Kullanıcının oyunu da silmek için votes nesnesini güncelle
-      await updateDoc(roomRef, {
-        [`users.${userSessionRef.current.userKey}`]: "",
-        [`votes.${userName}`]: "",
-      });
+      if (!roomDoc.exists()) {
+        toast.error(t.room.roomNotFound || "Oda bulunamadı");
+        router.push('/');
+        return;
+      }
+      
+      const roomData = roomDoc.data();
+      const currentUser = roomData.users[userSessionRef.current.userKey];
+      
+      // Kullanıcı kurucu mu kontrol et
+      const isAdmin = currentUser?.isAdmin || false;
+      
+      if (isAdmin) {
+        // Kurucu odadan ayrılıyor, odayı komple sil
+        await deleteDoc(roomRef);
+        toast.success(t.room.roomClosed || "Oda kapatıldı");
+      } else {
+        // Normal kullanıcı, sadece kullanıcıyı ve oyunu sil
+        const updates: Record<string, ReturnType<typeof deleteField>> = {};
+        
+        // users objesinden kullanıcı anahtarını sil (deleteField kullan)
+        updates[`users.${userSessionRef.current.userKey}`] = deleteField();
+        
+        // Eğer kullanıcının oyu varsa, sil
+        if (userName && roomData.votes && roomData.votes[userName]) {
+          updates[`votes.${userName}`] = deleteField();
+        }
+        
+        await updateDoc(roomRef, updates);
+        toast.success(t.room.leftRoom || "Odadan ayrıldınız");
+      }
       
       // Session ID'yi sil
-      localStorage.removeItem(`planningPokerSession_${id as string}`);
-
-      toast.success(t.room.leftRoom || "You have left the room");
+      localStorage.removeItem(`planningPokerSession_${roomId}`);
       
-      // Ana sayfaya yönlendir (window.location yerine next router kullan)
+      // Ana sayfaya yönlendir
       router.push('/');
     } catch (error) {
       console.error('Error leaving room:', error);
-      toast.error(t.room.error || "Error leaving room");
+      toast.error(t.room.error || "Odadan çıkarken bir hata oluştu");
     }
   };
 
-  if (!room) {
+  if (roomNotFound) {
+    return <RoomNotFound />;
+  }
+
+  if (isLoading || !room) {
     return (
       <main className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4 flex items-center justify-center`}>
         <Header />
@@ -259,11 +348,20 @@ export default function RoomPage() {
     );
   }
 
-  const voteData = Object.entries(room.votes).map(([name, point]) => ({
-    name,
-    value: 1,
-    point,
-  }));
+  // Oyları gruplandır: Kaç kişi hangi puanı vermiş
+  const groupedVotes: { [key: string]: number } = {};
+  Object.values(room.votes).forEach((point) => {
+    if (!point) return;
+    groupedVotes[point] = (groupedVotes[point] || 0) + 1;
+  });
+
+  // Gruplandırılmış oyları Pie Chart verisi formatına çevir
+  const voteData = Object.entries(groupedVotes).map(([point, count]) => ({
+    name: point,
+    value: count,
+    point: point,
+    count: count
+  })).sort((a, b) => parseFloat(a.point) - parseFloat(b.point)); // Puanlara göre sırala
 
   const calculateAverageScore = (votes: Vote): number => {
     const totalVotes = Object.values(votes).length;
@@ -275,34 +373,12 @@ export default function RoomPage() {
     <main className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4`}>
       <Header />
       
-      <div className="max-w-5xl mx-auto py-8">
+      <div className="max-w-5xl mx-auto py-8 relative">
         {/* Oda adı */}
         <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} text-center mb-6`}>{room.name}</h1>
         
-        {showNameInput && (
-          <div className={`mb-8 p-4 rounded-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'} shadow-md`}>
-            <input
-              type="text"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder={t.common.enterName}
-              className={`h-12 px-4 rounded-lg ${
-                theme === 'dark'
-                  ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400'
-                  : 'border-gray-300 text-gray-900'
-              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base`}
-            />
-            <button
-              onClick={() => userName && setShowNameInput(false)}
-              className="ml-2 h-12 bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700"
-            >
-              {t.common.save}
-            </button>
-          </div>
-        )}
-
         {/* Kullanıcı listesi ve butonlar */}
-        <div className="mt-4">
+        <div className="min-h-[60vh] flex items-center justify-center w-full overflow-visible">
           <PlayerCircle 
             users={room.users}
             votes={room.votes}
@@ -310,51 +386,109 @@ export default function RoomPage() {
             onReveal={handleReveal}
             onReset={handleReset}
             currentUserName={userName}
-            roomId={id as string}
           />
         </div>
 
-        {room.revealed && (
-          <div className={`mt-12 ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white'} rounded-2xl shadow-xl p-6`}>
-            <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 text-center`}>{t.common.voteResults}</h2>
-            
-            {/* Pie Chart ve Ortalama göster */}
-            <div className="flex flex-col items-center">
-              {/* Ortalama Puan */}
-              {calculateAverageScore(room.votes) > 0 && (
-                <div className="mb-6 text-center bg-blue-500 text-white rounded-xl px-6 py-3 shadow-lg">
-                  <div className="text-sm mb-1">{t.common.averageScore}</div>
-                  <div className="text-3xl font-bold">{calculateAverageScore(room.votes).toFixed(1)}</div>
+        {/* Pie Chart - Sadece revealed durumunda gösterilir */}
+        <AnimatePresence>
+          {room.revealed && (
+            <motion.div 
+              className={`absolute top-1/2 right-[15%] w-[35%] -translate-y-1/2 ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white'} rounded-2xl shadow-xl p-6`}
+              initial={{ opacity: 0, x: 200 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 200 }}
+              transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.2 }}
+              style={{ maxHeight: "70vh", overflowY: "auto" }}
+            >
+              <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 text-center`}>{t.common.voteResults || 'Oylama Sonuçları'}</h2>
+              
+              {/* Pie Chart ve Ortalama göster */}
+              <div className="flex flex-col items-center">
+                {/* Pie Chart */}
+                <div className="w-full max-w-md h-64 mb-4 p-2 rounded-xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={voteData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={90}
+                        innerRadius={60}
+                        fill="#8884d8"
+                        paddingAngle={1.5}
+                        dataKey="value"
+                        label={false}
+                        animationDuration={800}
+                        animationBegin={0}
+                      >
+                        {voteData.map((entry, i) => {
+                          const colorIndex = Math.abs(parseInt(entry.point)) % COLORS.length;
+                          return <Cell 
+                            key={`cell-${i}`} 
+                            fill={COLORS[colorIndex]} 
+                            strokeWidth={1}
+                            stroke={'rgba(255,255,255,0.6)'}
+                          />;
+                        })}
+                      </Pie>
+                      {/* Ortadaki ortalama puan bilgisi */}
+                      <text 
+                        x="50%" 
+                        y="45%" 
+                        textAnchor="middle" 
+                        dominantBaseline="middle" 
+                        className="text-xs font-normal"
+                        fill={theme === 'dark' ? '#9ca3af' : '#64748b'}
+                      >
+                        Ortalama
+                      </text>
+                      <text 
+                        x="50%" 
+                        y="58%" 
+                        textAnchor="middle" 
+                        dominantBaseline="middle" 
+                        className="text-3xl font-bold"
+                        fill={theme === 'dark' ? '#ffffff' : '#0f172a'}
+                      >
+                        {calculateAverageScore(room.votes).toFixed(1)}
+                      </text>
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              )}
 
-              {/* Pie Chart */}
-              <div className="w-full max-w-md h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={voteData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={90}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, point }) => `${name}: ${point}`}
-                    >
-                      {voteData.map((entry, i) => (
-                        <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
-                      {voteData.length} oy
-                    </text>
-                  </PieChart>
-                </ResponsiveContainer>
+                {/* Renk açıklamaları */}
+                <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mt-4">
+                  {voteData.map((entry, i) => {
+                    const colorIndex = Math.abs(parseInt(entry.point)) % COLORS.length;
+                    return (
+                      <motion.div 
+                        key={`legend-${i}`} 
+                        className="flex flex-col items-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 + (i * 0.1), duration: 0.4 }}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: COLORS[colorIndex] }}
+                          ></div>
+                          <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>
+                            {entry.point}
+                          </span>
+                        </div>
+                        <span className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                          {entry.count} {entry.count === 1 ? 'oy' : 'oy'}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Kart seçme alanı - ekranın altında sabitlenmiş */}
@@ -399,10 +533,8 @@ export default function RoomPage() {
       {/* Kullanıcı Adı Modal */}
       <NameModal 
         isOpen={showNameModal}
-        userName={userName}
         isLoading={isJoining}
         onClose={() => setShowNameModal(false)}
-        onChangeName={(name) => setUserName(name)}
         onSubmit={handleJoinRoom}
         showCancelButton={false}
         submitButtonText={t.room.joinRoom || 'Join Room'}
@@ -410,4 +542,4 @@ export default function RoomPage() {
       />
     </main>
   );
-} 
+}

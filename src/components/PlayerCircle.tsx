@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import { toast } from 'react-hot-toast';
 import { BsQuestion } from 'react-icons/bs';
+import { motion } from 'framer-motion';
 
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -22,10 +22,9 @@ interface PlayerCircleProps {
   onReveal: () => void;
   onReset: () => void;
   currentUserName: string;
-  roomId: string;
 }
 
-export default function PlayerCircle({ users, votes, revealed, onReveal, onReset, currentUserName, roomId }: PlayerCircleProps) {
+export default function PlayerCircle({ users, votes, revealed, onReveal, onReset, currentUserName }: PlayerCircleProps) {
   const { theme } = useTheme();
   const { t } = useLanguage();
   
@@ -44,97 +43,105 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
         return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
       });
   }, [users, votes]);
-
-  // Eğer kullanıcı sayısı 1 veya 0 ise yalnız hissetme mesajını göster
-  const showLonelyMessage = userList.length <= 1;
   
   // En az bir oyun verilmiş mi?
   const hasAnyVotes = Object.keys(votes).length > 0;
 
-  // Oyuncuları davet et
-  const handleInvite = () => {
-    const url = `${window.location.origin}/room/${roomId}`;
-    navigator.clipboard.writeText(url)
-      .then(() => {
-        toast.success(t.common.linkCopied);
-      })
-      .catch(() => {
-        toast.error(t.common.copyFailed);
-      });
-  };
-
   return (
-    <div className={`w-full max-w-xl mx-auto flex flex-col items-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-      {/* Yalnız hissetme mesajı */}
-      {showLonelyMessage && (
-        <div className="mb-8 text-center">
-          <p className="text-lg mb-2">{t.room.feelingLonely} 😢</p>
-          <button 
-            onClick={handleInvite}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
-          >
-            {t.room.invitePlayers}
-          </button>
-        </div>
-      )}
-
-      {/* Kullanıcı Listesi - Ortada */}
-      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-center">
-        {userList.map((user) => {
-          // Her kullanıcı için kartın görünümünü belirle
-          const isCurrentUser = user.name === currentUserName;
-          const cardColor = user.hasVoted 
-            ? theme === 'dark' ? 'bg-green-600' : 'bg-green-500' 
-            : theme === 'dark' ? 'bg-slate-700' : 'bg-gray-200';
-          
-          return (
-            <div key={user.key} className="flex flex-col items-center">
-              <div className={`
-                w-20 h-20 mb-2 flex items-center justify-center rounded-full shadow-lg
-                ${cardColor}
-                ${isCurrentUser ? 'outline outline-offset-2 outline-blue-500' : ''}
-                ${user.isAdmin ? 'outline outline-offset-2 outline-amber-500' : ''}
-              `}>
-                {revealed && user.hasVoted ? (
-                  <div className="font-bold text-2xl text-white">{user.vote}</div>
-                ) : user.hasVoted ? (
-                  <CheckIcon className="w-10 h-10 text-white" />
-                ) : (
-                  <BsQuestion className="w-10 h-10 text-white" />
+    <motion.div 
+      className={`w-full max-w-4xl mx-auto flex flex-col items-center justify-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'} h-[60vh]`}
+      layout
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    >
+      {/* Kullanıcı Listesi */}
+      <motion.div 
+        className="flex items-center justify-center"
+        layout="position"
+        initial={{ opacity: 1 }}
+        animate={{ 
+          opacity: 1,
+          width: revealed ? '50%' : '100%',
+        }}
+        style={{ 
+          position: revealed ? 'absolute' : 'relative',
+          left: revealed ? '5%' : 'auto',
+          top: revealed ? '50%' : 'auto',
+          transform: revealed ? 'translateY(-50%)' : 'none',
+          width: revealed ? '35%' : '100%'
+        }}
+        transition={{ duration: 0.6, type: "spring", stiffness: 150, damping: 25 }}
+      >
+        <div className={`flex flex-wrap ${revealed ? 'justify-center' : 'justify-evenly'} w-full`}>
+          {userList.map((user) => {
+            // Her kullanıcı için kartın görünümünü belirle
+            const isCurrentUser = user.name === currentUserName;
+            const hasVoted = user.hasVoted;
+            
+            return (
+              <motion.div 
+                key={`player-${user.key}`} 
+                className="flex flex-col items-center mb-10 mx-4 md:mx-6"
+                layout="position"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "tween", stiffness: 400, damping: 10 }}
+              >
+                <div className={`
+                  ${revealed ? 'w-20 h-20 md:w-24 md:h-24' : 'w-24 h-24 md:w-28 md:h-28'} mb-2 md:mb-3 flex items-center justify-center rounded-full shadow-lg
+                  ${hasVoted 
+                    ? theme === 'dark' ? 'bg-green-600' : 'bg-green-500' 
+                    : theme === 'dark' ? 'bg-slate-700' : 'bg-slate-600'
+                  }
+                  ${isCurrentUser ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900' : ''}
+                  transition-all duration-300
+                `}>
+                  {revealed && hasVoted ? (
+                    <div className={`font-bold ${revealed ? 'text-xl' : 'text-2xl'} text-white`}>{user.vote}</div>
+                  ) : hasVoted ? (
+                    <CheckIcon className={`${revealed ? 'w-10 h-10' : 'w-14 h-14'} text-white`} />
+                  ) : (
+                    <BsQuestion className={`${revealed ? 'w-12 h-12' : 'w-16 h-16'} text-white`} />
+                  )}
+                </div>
+                <span className={`text-sm md:text-base font-medium px-3 md:px-4 py-1 md:py-1.5 rounded-full ${
+                  theme === 'dark' 
+                    ? 'bg-slate-800 text-white' 
+                    : 'bg-white text-gray-800'
+                } shadow-sm mt-1`}>
+                  {user.name}
+                </span>
+                {user.isAdmin && (
+                  <span className="mt-1 md:mt-2 text-2xs md:text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full">{t.room.admin || "kurucu"}</span>
                 )}
-              </div>
-              <span className={`text-sm font-semibold px-3 py-1 rounded-full ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white text-gray-800'} shadow-sm mt-2`}>
-                {user.name}
-              </span>
-              {isCurrentUser && (
-                <span className="mt-1 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">{t.room.you}</span>
-              )}
-              {user.isAdmin && !isCurrentUser && (
-                <span className="mt-1 text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full">{t.room.admin}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                {isCurrentUser && !user.isAdmin && (
+                  <span className="mt-1 md:mt-2 text-2xs md:text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">{t.room.you || "sen"}</span>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </motion.div>
       
       {/* Oyları Göster/Sıfırla Butonu - Alt kısımda ama kartlardan yukarıda */}
-      <div className="fixed bottom-28 left-0 right-0 flex justify-center z-10">
-        <button
+      <div className="mt-auto fixed bottom-28 left-0 right-0 flex justify-center z-10">
+        <motion.button
           onClick={revealed ? onReset : onReveal}
           disabled={!hasAnyVotes && !revealed}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          animate={{
+            backgroundColor: revealed 
+              ? theme === 'dark' ? 'rgb(5, 150, 105)' : 'rgb(16, 185, 129)'
+              : theme === 'dark' ? 'rgb(37, 99, 235)' : 'rgb(59, 130, 246)'
+          }}
           className={`
-            px-6 py-2 rounded-lg font-medium text-white
+            px-8 py-3 rounded-lg font-medium text-white
             transition-all duration-300 shadow-md hover:shadow-lg
-            ${revealed 
-              ? `${theme === 'dark' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-500 hover:bg-emerald-400'}`
-              : `${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-500 hover:bg-blue-400'}`
-            }
             disabled:opacity-50 disabled:cursor-not-allowed
           `}
         >
-          {revealed ? t.room.nextVoting || 'Sonraki Oylama' : t.common.showVotes}
-        </button>
+          {revealed ? t.room.nextVoting || 'Sonraki Oylama' : t.common.showVotes || 'Oyları Göster'}
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 } 

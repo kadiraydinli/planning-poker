@@ -47,7 +47,8 @@
     "cancel": "Cancel",
     "invitePlayers": "Invite Players",
     "scanToJoin": "Scan the QR code to join",
-    "copyLink": "Copy link"
+    "copyLink": "Copy link",
+    "backToHome": "Back to Home"
   },
   "room": {
     "roomName": "Room Name",
@@ -75,6 +76,9 @@
     "invitePlayers": "Invite players",
     "nextVoting": "Next Voting",
     "admin": "admin",
-    "you": "you"
+    "you": "you",
+    "roomNotFound": "Room not found",
+    "roomClosed": "Room closed",
+    "roomMayBeClosed": "The room you are looking for may not exist or has been closed."
   }
 } 
