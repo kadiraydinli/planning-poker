@@ -46,7 +46,9 @@
     "invitePlayers": "Oyuncuları Davet Et",
     "scanToJoin": "Katılmak için QR kodu tarayın",
     "copyLink": "Bağlantıyı kopyala",
-    "backToHome": "Ana Sayfaya Dön"
+    "backToHome": "Ana Sayfaya Dön",
+    "voteText": "oy",
+    "votesText": "oy"
   },
   "room": {
     "roomName": "Oda Adı",
@@ -78,6 +80,7 @@
     "roomNotFound": "Oda Bulunamadı",
     "roomClosed": "Oda kapatıldı",
     "roomMayBeClosed": "Aradığınız oda mevcut değil veya kapatılmış olabilir.",
-    "adminClosingRoom": "Yönetici odadan ayrıldı!"
+    "adminClosingRoom": "Yönetici odadan ayrıldı!",
+    "userExists": "Bu isimde bir kullanıcı zaten odada mevcut"
   }
 } 

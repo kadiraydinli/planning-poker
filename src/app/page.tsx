@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-hot-toast';
 import { nanoid } from 'nanoid';
@@ -115,13 +115,46 @@ export default function Home() {
       if (!roomId) {
         await createAndJoinRoom(name);
       } else {
-        // Mevcut bir roomId varsa, odaya katıl
-        const sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
-        if (!localStorage.getItem(`planningPokerSession_${roomId}`)) {
-          localStorage.setItem(`planningPokerSession_${roomId}`, sessionId);
+        // Mevcut odayı kontrol et - aynı isimde başka kullanıcı var mı?
+        try {
+          const roomRef = doc(db, 'rooms', roomId);
+          const roomDoc = await getDoc(roomRef);
+          
+          if (roomDoc.exists()) {
+            const roomData = roomDoc.data();
+            const sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
+            
+            // Aynı isimde başka bir kullanıcı var mı?
+            interface UserData {
+              name: string;
+              sessionId?: string;
+            }
+            
+            const existingUser = Object.values(roomData.users || {}).find((user) => {
+              const userData = user as UserData;
+              return userData.name.toLowerCase() === name.toLowerCase() && 
+                     userData.sessionId !== sessionId;
+            });
+            
+            if (existingUser) {
+              toast.error(t.room.userExists);
+              setIsJoining(false);
+              return;
+            }
+            
+            // Session ID yoksa oluştur
+            if (!localStorage.getItem(`planningPokerSession_${roomId}`)) {
+              localStorage.setItem(`planningPokerSession_${roomId}`, sessionId);
+            }
+            
+            await joinRoomWithUserName(roomId, name, sessionId);
+          } else {
+            toast.error(t.room.roomNotFound);
+          }
+        } catch (error) {
+          console.error('Error checking room:', error);
+          toast.error(t.room.error);
         }
-        
-        await joinRoomWithUserName(roomId, name, sessionId);
       }
     } catch (error) {
       console.error('Error joining room:', error);

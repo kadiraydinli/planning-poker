@@ -255,6 +255,19 @@ export default function RoomPage() {
       return;
     }
 
+    // Aynı isimde başka bir kullanıcı var mı kontrol et
+    if (room?.users) {
+      const existingUser = Object.values(room.users).find(user => 
+        user.name.toLowerCase() === name.toLowerCase() && 
+        user.sessionId !== userSessionRef.current.sessionId
+      );
+      
+      if (existingUser) {
+        toast.error(t.room.userExists);
+        return;
+      }
+    }
+
     setUserName(name);
     setIsJoining(true);
     try {
@@ -607,7 +620,7 @@ export default function RoomPage() {
                           </span>
                         </div>
                         <span className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-                          {entry.count} {entry.count === 1 ? 'oy' : 'oy'}
+                          {entry.count} {entry.count === 1 ? t.common.voteText : t.common.votesText}
                         </span>
                       </motion.div>
                     );

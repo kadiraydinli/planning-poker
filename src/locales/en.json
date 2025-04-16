@@ -46,7 +46,9 @@
     "invitePlayers": "Invite Players",
     "scanToJoin": "Scan the QR code to join",
     "copyLink": "Copy link",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "voteText": "vote",
+    "votesText": "votes"
   },
   "room": {
     "roomName": "Room Name",
@@ -78,6 +80,7 @@
     "roomNotFound": "Room Not Found",
     "roomClosed": "Room has been closed",
     "roomMayBeClosed": "The room you are looking for doesn't exist or may have been closed.",
-    "adminClosingRoom": "The manager left the room!"
+    "adminClosingRoom": "The manager left the room!",
+    "userExists": "User with this name already exists in the room"
   }
 } 
