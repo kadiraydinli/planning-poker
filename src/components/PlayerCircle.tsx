@@ -110,10 +110,10 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
                   {user.name}
                 </span>
                 {user.isAdmin && (
-                  <span className="mt-1 md:mt-2 text-2xs md:text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full">{t.room.admin || "kurucu"}</span>
+                  <span className="mt-1 md:mt-2 text-2xs md:text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full">{t.room.admin}</span>
                 )}
                 {isCurrentUser && !user.isAdmin && (
-                  <span className="mt-1 md:mt-2 text-2xs md:text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">{t.room.you || "sen"}</span>
+                  <span className="mt-1 md:mt-2 text-2xs md:text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">{t.room.you}</span>
                 )}
               </motion.div>
             );
@@ -122,7 +122,7 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
       </motion.div>
       
       {/* Oyları Göster/Sıfırla Butonu - Alt kısımda ama kartlardan yukarıda */}
-      <div className="mt-auto fixed bottom-28 left-0 right-0 flex justify-center z-10">
+      <div className="mt-auto fixed bottom-32 left-0 right-0 flex justify-center z-10">
         <motion.button
           onClick={revealed ? onReset : onReveal}
           disabled={!hasAnyVotes && !revealed}
@@ -139,7 +139,7 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
             disabled:opacity-50 disabled:cursor-not-allowed
           `}
         >
-          {revealed ? t.room.nextVoting || 'Sonraki Oylama' : t.common.showVotes || 'Oyları Göster'}
+          {revealed ? t.room.nextVoting : t.common.showVotes}
         </motion.button>
       </div>
     </motion.div>

@@ -19,10 +19,10 @@ export default function RoomNotFound() {
           <NotFoundCardsSvg />
         </div>
         <h2 className={`text-3xl font-bold mb-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-          {t.room.roomNotFound || "Oda bulunamadı"}
+          {t.room.roomNotFound}
         </h2>
         <p className={`mb-10 text-lg ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-          {t.room.roomMayBeClosed || "Aradığınız oda mevcut değil veya kapatılmış olabilir."}
+          {t.room.roomMayBeClosed}
         </p>
         <button
           onClick={() => router.push('/')}
@@ -32,7 +32,7 @@ export default function RoomNotFound() {
               : 'bg-indigo-500 hover:bg-indigo-600 text-white'
           } transition-colors duration-300`}
         >
-          {t.common.backToHome || "Ana Sayfaya Dön"}
+          {t.common.backToHome}
         </button>
       </div>
     </main>

@@ -176,7 +176,7 @@ export default function RoomPage() {
         
         // Eğer önceden bir oda varsa ve şimdi yok ise, muhtemelen silindi
         if (userSessionRef.current.initialized) {
-          toast.error(t.room.roomClosed || "Oda kapatıldı");
+          toast.error(t.room.roomClosed);
           router.push('/');
         }
       }
@@ -211,7 +211,7 @@ export default function RoomPage() {
       return newUserKey;
     } catch (error) {
       console.error('Error adding user to room:', error);
-      toast.error(t.room.errorJoining || 'Error joining room');
+      toast.error(t.room.errorJoining);
       return null;
     }
   };
@@ -237,10 +237,10 @@ export default function RoomPage() {
       }
       
       setShowNameModal(false);
-      toast.success(t.room.voteSaved || 'Successfully joined the room');
+      toast.success(t.room.voteSaved);
     } catch (error) {
       console.error('Error joining room:', error);
-      toast.error(t.room.errorJoining || 'Error joining room');
+      toast.error(t.room.errorJoining);
     } finally {
       setIsJoining(false);
     }
@@ -297,7 +297,7 @@ export default function RoomPage() {
       const roomDoc = await getDoc(roomRef);
       
       if (!roomDoc.exists()) {
-        toast.error(t.room.roomNotFound || "Oda bulunamadı");
+        toast.error(t.room.roomNotFound);
         router.push('/');
         return;
       }
@@ -318,7 +318,7 @@ export default function RoomPage() {
       await leaveRoomAction(false);
     } catch (error) {
       console.error('Error leaving room:', error);
-      toast.error(t.room.error || "Odadan çıkarken bir hata oluştu");
+      toast.error(t.room.error);
     }
   };
 
@@ -334,13 +334,13 @@ export default function RoomPage() {
       if (isAdmin) {
         // Kurucu odadan ayrılıyor, odayı komple sil
         await deleteDoc(roomRef);
-        toast.success(t.room.roomClosed || "Oda kapatıldı");
+        toast.success(t.room.roomClosed);
       } else {
         // Normal kullanıcı, sadece kullanıcıyı ve oyunu sil
         const roomDoc = await getDoc(roomRef);
         
         if (!roomDoc.exists()) {
-          toast.error(t.room.roomNotFound || "Oda bulunamadı");
+          toast.error(t.room.roomNotFound);
           router.push('/');
           return;
         }
@@ -357,7 +357,7 @@ export default function RoomPage() {
         }
         
         await updateDoc(roomRef, updates);
-        toast.success(t.room.leftRoom || "Odadan ayrıldınız");
+        toast.success(t.room.leftRoom);
       }
       
       // Session ID'yi sil
@@ -367,7 +367,7 @@ export default function RoomPage() {
       router.push('/');
     } catch (error) {
       console.error('Error leaving room:', error);
-      toast.error(t.room.error || "Odadan çıkarken bir hata oluştu");
+        toast.error(t.room.error);
     } finally {
       setIsLeavingRoom(false);
       setShowLeaveConfirmModal(false);
@@ -573,7 +573,7 @@ export default function RoomPage() {
           }`}
         >
           <ArrowLeftOnRectangleIcon className="h-5 w-5" />
-          {t.room.leaveRoom || "Leave Room"}
+          {t.room.leaveRoom}
         </button>
       </div>
 
@@ -584,8 +584,8 @@ export default function RoomPage() {
         onClose={() => setShowNameModal(false)}
         onSubmit={handleJoinRoom}
         showCancelButton={false}
-        submitButtonText={t.room.joinRoom || 'Join Room'}
-        loadingText={t.room.joining || 'Joining...'}
+        submitButtonText={t.room.joinRoom}
+        loadingText={t.room.joining}
       />
 
       {/* Odadan Çıkış Onay Modalı */}
@@ -593,9 +593,9 @@ export default function RoomPage() {
         isOpen={showLeaveConfirmModal}
         onClose={() => setShowLeaveConfirmModal(false)}
         onConfirm={() => leaveRoomAction(true)}
-        title={t.room.confirmLeave || "Odadan Çıkmayı Onayla"}
-        message={t.room.confirmLeaveAdmin || "Odadan çıkmak istediğinize emin misiniz? Oda kurucusu olduğunuz için çıkarsanız oda silinecektir."}
-        confirmButtonText={t.room.leaveRoom || "Odadan Çık"}
+        title={t.room.confirmLeave}
+        message={t.room.confirmLeaveAdmin}
+        confirmButtonText={t.room.leaveRoom}
         isLoading={isLeavingRoom}
       />
     </main>

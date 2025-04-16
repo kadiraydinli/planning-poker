@@ -32,6 +32,23 @@ export default function Home() {
       return;
     }
 
+    // Kullanıcı adı yoksa, önce modal'ı gösterelim
+    if (!userName.trim()) {
+      // Oda adını ve ölçek tipini geçici olarak state'de tutuyoruz
+      // Oda oluşturma işlemi handleJoinAsAdmin içinde yapılacak
+      setShowNameModal(true);
+    } else {
+      // Kullanıcı adı varsa doğrudan oda oluştur
+      createAndJoinRoom(userName);
+    }
+  };
+
+  const createAndJoinRoom = async (name: string) => {
+    if (!roomName.trim() || !name.trim()) {
+      toast.error(t.room.enterNameFirst);
+      return;
+    }
+
     setIsCreating(true);
     const newRoomId = nanoid(10);
     setRoomId(newRoomId);
@@ -52,12 +69,8 @@ export default function Home() {
 
       setIsCreating(false);
       
-      // Kullanıcı adı varsa, doğrudan odaya katılalım, yoksa modal gösterelim
-      if (userName.trim()) {
-        joinRoomWithUserName(newRoomId, userName, sessionId);
-      } else {
-        setShowNameModal(true);
-      }
+      // Odayı oluşturduktan sonra kullanıcıyı oda sahibi olarak ekle
+      joinRoomWithUserName(newRoomId, name, sessionId);
     } catch (error) {
       console.error('Error creating room:', error);
       toast.error(t.room.error);
@@ -84,7 +97,7 @@ export default function Home() {
       router.push(`/room/${roomIdToJoin}`);
     } catch (error) {
       console.error('Error joining room:', error);
-      toast.error(t.room.errorJoining || 'Error joining room');
+      toast.error(t.room.errorJoining);
     }
   };
 
@@ -96,18 +109,26 @@ export default function Home() {
 
     setUserName(name);
     setIsJoining(true);
+    
     try {
-      const sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
-      if (!localStorage.getItem(`planningPokerSession_${roomId}`)) {
-        localStorage.setItem(`planningPokerSession_${roomId}`, sessionId);
+      // Eğer henüz bir roomId yoksa, oda oluşturma işlemini başlat
+      if (!roomId) {
+        await createAndJoinRoom(name);
+      } else {
+        // Mevcut bir roomId varsa, odaya katıl
+        const sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
+        if (!localStorage.getItem(`planningPokerSession_${roomId}`)) {
+          localStorage.setItem(`planningPokerSession_${roomId}`, sessionId);
+        }
+        
+        await joinRoomWithUserName(roomId, name, sessionId);
       }
-      
-      await joinRoomWithUserName(roomId, name, sessionId);
     } catch (error) {
       console.error('Error joining room:', error);
-      toast.error(t.room.errorJoining || 'Error joining room');
+      toast.error(t.room.errorJoining);
     } finally {
       setIsJoining(false);
+      setShowNameModal(false);
     }
   };
 
@@ -482,9 +503,9 @@ export default function Home() {
         isOpen={showNameModal}
         isLoading={isJoining}
         onClose={() => setShowNameModal(false)}
-        onSubmit={handleJoinAsAdmin}
-        submitButtonText={t.room.joinRoom || 'Join Room'}
-        loadingText={t.room.joining || 'Joining...'}
+        onSubmit={(value) => handleJoinAsAdmin(value)}
+        submitButtonText={t.room.joinRoom}
+        loadingText={t.room.joining}
       />
     </div>
   );
