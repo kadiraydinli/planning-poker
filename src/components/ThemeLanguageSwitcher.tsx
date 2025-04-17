@@ -99,11 +99,15 @@ export default function ThemeLanguageSwitcher() {
                     transition={{ delay: 0.1, duration: 0.2 }}
                   >
                     <div className={`
-                      inline-block mx-auto mb-2 p-2 rounded-xl
-                      ${theme === 'dark'
-                        ? 'bg-white/95 shadow-[0_0_20px_rgba(79,70,229,0.3)]'
-                        : 'bg-white shadow-[0_0_12px_rgba(124,58,237,0.12)]'
-                      }
+                      inline-block
+                      mx-auto
+                      mb-2
+                      p-2
+                      rounded-xl
+                      bg-white
+                      shadow-[0_0_12px_rgba(124,58,237,0.12)]
+                      dark:bg-white/95
+                      dark:shadow-[0_0_20px_rgba(79,70,229,0.3)]
                     `}>
                       <QRCodeSVG
                         value={roomUrl}
@@ -114,7 +118,7 @@ export default function ThemeLanguageSwitcher() {
                         className="mx-auto"
                       />
                     </div>
-                    <p className={`text-sm font-medium ${theme === 'dark' ? 'text-indigo-300' : 'text-purple-800'}`}>
+                    <p className="text-sm font-medium text-purple-800 dark:text-indigo-300">
                       {t.common.scanToJoin}
                     </p>
                   </motion.div>
