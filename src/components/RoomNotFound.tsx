@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Header from '@/components/Header';
-import NotFoundCardsSvg from '@/components/NotFoundCardsSvg';
+import NotFoundCardsSvg from '@/assets/icons/NotFoundCardsSvg';
 
 export default function RoomNotFound() {
   const { theme } = useTheme();
