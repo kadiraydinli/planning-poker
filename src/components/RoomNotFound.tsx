@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import Header from '@/components/Header';
 import NotFoundCardsSvg from '@/assets/icons/NotFoundCardsSvg';
 
 export default function RoomNotFound() {
@@ -14,7 +13,6 @@ export default function RoomNotFound() {
 
   return (
     <main className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4 flex flex-col items-center justify-center`}>
-      <Header />
       <div className="text-center max-w-md mx-auto">
         <div className="flex justify-center mb-10 mt-4">
           <NotFoundCardsSvg />
