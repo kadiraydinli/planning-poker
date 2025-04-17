@@ -52,8 +52,8 @@ export default function ThemeLanguageSwitcher() {
           <button
             onClick={() => setShowInviteTooltip(!showInviteTooltip)}
             className={`group flex items-center justify-center gap-1 px-4 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${theme === 'dark'
-                ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30'
-                : 'bg-white/30 text-gray-600 hover:bg-white/40 hover:text-gray-800 shadow-purple-500/10'
+              ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30'
+              : 'bg-white/30 text-gray-600 hover:bg-white/40 hover:text-gray-800 shadow-purple-500/10'
               }`}
           >
             <UserPlusIcon className="w-5 h-5" />
@@ -63,13 +63,28 @@ export default function ThemeLanguageSwitcher() {
           {showInviteTooltip && (
             <div
               ref={inviteTooltipRef}
-              className={`absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-10 w-80 ${theme === 'dark' ? 'bg-slate-800/90' : 'bg-white/90'
-                } p-4 backdrop-blur-sm border ${theme === 'dark' ? 'border-slate-700/50' : 'border-purple-100'}`}
+              className={`
+                absolute 
+                right-0 
+                top-full 
+                mt-2 
+                rounded-xl 
+                shadow-lg 
+                overflow-hidden 
+                z-10 
+                w-80 
+                bg-white/90 
+                dark:bg-slate-800/90 
+                p-4 
+                backdrop-blur-sm 
+                border-purple-100
+                dark:border-slate-700/50
+              `}
             >
               <div className="flex flex-col gap-4">
                 <div className="text-center mb-1">
                   <QRCodeSVG value={roomUrl} size={160} className="mx-auto mb-2" />
-                  <p className={`text-xs ${theme === 'dark' ? 'text-slate-300' : 'text-gray-500'}`}>
+                  <p className="text-xs text-gray-500 dark:text-slate-300">
                     {t.common.scanToJoin}
                   </p>
                 </div>
@@ -80,15 +95,15 @@ export default function ThemeLanguageSwitcher() {
                     value={roomUrl}
                     readOnly
                     className={`flex-1 px-3 py-2 rounded-lg text-sm ${theme === 'dark'
-                        ? 'bg-slate-700 border-slate-600 text-white'
-                        : 'border border-gray-300 text-gray-900'
+                      ? 'bg-slate-700 border-slate-600 text-white'
+                      : 'border border-gray-300 text-gray-900'
                       } focus:ring focus:ring-indigo-300`}
                   />
                   <button
                     onClick={copyToClipboard}
                     className={`p-2 rounded-lg ${theme === 'dark'
-                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                       }`}
                     title={t.common.copyLink}
                   >
@@ -106,8 +121,8 @@ export default function ThemeLanguageSwitcher() {
       <button
         onClick={toggleTheme}
         className={`group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${theme === 'dark'
-            ? 'bg-slate-800/40 text-yellow-300 hover:bg-slate-700/50 hover:text-yellow-200 shadow-slate-900/30'
-            : 'bg-white/30 text-yellow-500 hover:bg-white/40 hover:text-yellow-600 shadow-purple-500/10'
+          ? 'bg-slate-800/40 text-yellow-300 hover:bg-slate-700/50 hover:text-yellow-200 shadow-slate-900/30'
+          : 'bg-white/30 text-yellow-500 hover:bg-white/40 hover:text-yellow-600 shadow-purple-500/10'
           }`}
         aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
       >
@@ -121,13 +136,13 @@ export default function ThemeLanguageSwitcher() {
       <button
         onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
         className={`group flex items-center justify-center gap-2 px-4 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${theme === 'dark'
-            ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30'
-            : 'bg-white/30 text-gray-600 hover:bg-white/40 hover:text-gray-800 shadow-purple-500/10'
+          ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30'
+          : 'bg-white/30 text-gray-600 hover:bg-white/40 hover:text-gray-800 shadow-purple-500/10'
           }`}
         aria-label={language === 'tr' ? t.common.switchToEnglish : t.common.switchToTurkish}
       >
         <span className="text-sm font-medium tracking-wide">{language === 'tr' ? t.common.langCodeEn : t.common.langCodeTr}</span>
-        <LanguageIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`} />
+        <LanguageIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
       </button>
     </div>
   );

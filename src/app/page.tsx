@@ -14,6 +14,7 @@ import { scrumScales } from '@/lib/scaleTypes';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import Header from '@/components/Header';
 import NameModal from '@/components/NameModal';
+import DecorativeElements from '@/components/DecorativeElements';
 
 export default function Home() {
   const { t } = useLanguage();
@@ -168,38 +169,28 @@ export default function Home() {
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'}`}>
-      {/* Header Component */}
       <Header />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className={`absolute -top-40 -right-40 w-80 h-80 ${theme === 'dark' ? 'bg-purple-800' : 'bg-purple-300'} rounded-full opacity-20 blur-3xl`}></div>
-          <div className={`absolute -bottom-40 -left-40 w-80 h-80 ${theme === 'dark' ? 'bg-indigo-800' : 'bg-indigo-300'} rounded-full opacity-20 blur-3xl`}></div>
-          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 ${theme === 'dark' ? 'bg-pink-800' : 'bg-pink-300'} rounded-full opacity-20 blur-3xl`}></div>
-        </div>
+        <DecorativeElements />
 
         <div className="relative max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - Info */}
           <div className="text-left space-y-8">
             <div>
               <h1 className={`text-6xl font-bold mb-6 ${theme === 'dark'
-                  ? 'bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300'
-                  : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600'
+                ? 'bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300'
+                : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600'
                 } bg-clip-text text-transparent leading-normal`}>
                 {t.common.appName}
               </h1>
-              <p className={`text-xl ${theme === 'dark' ? 'text-slate-200' : 'text-gray-700'}`}>
+              <p className={'text-xl text-gray-700 dark:text-slate-200'}>
                 {t.common.appDescription}
               </p>
             </div>
 
-            <div className={`${theme === 'dark'
-                ? 'bg-slate-800/50'
-                : 'bg-white/90'
-              } backdrop-blur-lg rounded-2xl p-8 space-y-6 shadow-xl border ${theme === 'dark' ? 'border-slate-700/50' : 'border-purple-100'
-              }`}>
+            <div className="bg-white/90 dark:bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 space-y-6 shadow-xl border border-purple-100 dark:border-slate-700/50">
               <form
                 className="space-y-6"
                 onSubmit={(e) => {
@@ -208,8 +199,7 @@ export default function Home() {
                 }}
               >
                 <div className="relative">
-                  <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'
-                    }`}>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-slate-300">
                     {t.room.name}
                   </label>
                   <input
@@ -218,15 +208,14 @@ export default function Home() {
                     onChange={(e) => setRoomName(e.target.value)}
                     placeholder={t.room.name}
                     className={`w-full h-12 px-4 rounded-lg border-2 focus:ring focus:ring-opacity-50 placeholder-gray-400 shadow-sm ${theme === 'dark'
-                        ? 'bg-slate-700 border-slate-600 focus:border-purple-500 focus:ring-purple-500/20 text-slate-200'
-                        : 'bg-white border-purple-100 focus:border-purple-300 focus:ring-purple-200 text-gray-900'
+                      ? 'bg-slate-700 border-slate-600 focus:border-purple-500 focus:ring-purple-500/20 text-slate-200'
+                      : 'bg-white border-purple-100 focus:border-purple-300 focus:ring-purple-200 text-gray-900'
                       }`}
                   />
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'
-                    }`}>
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-300">
                     {t.room.pointScale}
                   </label>
                   <div className="grid grid-cols-2 gap-4">
@@ -236,36 +225,36 @@ export default function Home() {
                         type="button"
                         onClick={() => setScaleType(key)}
                         className={`relative h-20 rounded-lg font-medium transition-all overflow-hidden ${scaleType === key
-                            ? theme === 'dark'
-                              ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-slate-900'
-                              : 'ring-2 ring-purple-500 ring-offset-2'
-                            : theme === 'dark'
-                              ? 'hover:bg-slate-700/50'
-                              : 'hover:bg-white/50'
+                          ? theme === 'dark'
+                            ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-slate-900'
+                            : 'ring-2 ring-purple-500 ring-offset-2'
+                          : theme === 'dark'
+                            ? 'hover:bg-slate-700/50'
+                            : 'hover:bg-white/50'
                           }`}
                       >
                         <div className={`absolute inset-0 ${scaleType === key
-                            ? theme === 'dark'
-                              ? 'bg-gradient-to-r from-indigo-900 to-purple-900'
-                              : 'bg-gradient-to-r from-indigo-500 to-purple-500'
-                            : theme === 'dark'
-                              ? 'bg-slate-800'
-                              : 'bg-white'
+                          ? theme === 'dark'
+                            ? 'bg-gradient-to-r from-indigo-900 to-purple-900'
+                            : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                          : theme === 'dark'
+                            ? 'bg-slate-800'
+                            : 'bg-white'
                           }`}></div>
                         <div className="relative">
                           <div className={`text-lg font-bold ${scaleType === key
-                              ? 'text-white'
-                              : theme === 'dark'
-                                ? 'text-slate-200'
-                                : 'text-gray-900'
+                            ? 'text-white'
+                            : theme === 'dark'
+                              ? 'text-slate-200'
+                              : 'text-gray-900'
                             }`}>
                             {scale.name}
                           </div>
                           <div className={`text-sm ${scaleType === key
-                              ? 'text-white/80'
-                              : theme === 'dark'
-                                ? 'text-slate-400'
-                                : 'text-gray-500'
+                            ? 'text-white/80'
+                            : theme === 'dark'
+                              ? 'text-slate-400'
+                              : 'text-gray-500'
                             }`}>
                             {scale.description}
                           </div>
@@ -279,8 +268,8 @@ export default function Home() {
                   type="submit"
                   disabled={isCreating}
                   className={`w-full h-12 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 ${theme === 'dark'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
-                      : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
+                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
                     }`}
                 >
                   {isCreating ? (
@@ -300,29 +289,23 @@ export default function Home() {
           </div>
 
           {/* Right Side - Features */}
-          <div className={`${theme === 'dark'
-              ? 'bg-slate-800/90'
-              : 'bg-white/90'
-            } backdrop-blur-lg rounded-2xl p-8 space-y-6 shadow-xl border ${theme === 'dark' ? 'border-slate-700' : 'border-purple-100'
-            }`}>
-            <h2 className={`text-2xl font-bold mb-8 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'
-              }`}>
+          <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg rounded-2xl p-8 space-y-6 shadow-xl border border-purple-100 dark:border-slate-700">
+            <h2 className="text-2xl font-bold mb-8 text-gray-900 dark:text-slate-200">
               {t.common.quickAndEasy}
             </h2>
             <div className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 ${theme === 'dark'
-                    ? 'bg-gradient-to-br from-indigo-600/30 to-purple-600/30'
-                    : 'bg-gradient-to-br from-indigo-500 to-purple-500'
+                  ? 'bg-gradient-to-br from-indigo-600/30 to-purple-600/30'
+                  : 'bg-gradient-to-br from-indigo-500 to-purple-500'
                   } rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <BoltIcon className={`w-6 h-6 ${theme === 'dark' ? 'text-indigo-300' : 'text-white'}`} />
+                  <BoltIcon className="w-6 h-6 text-white dark:text-indigo-300" />
                 </div>
                 <div>
-                  <h3 className={`text-lg font-semibold mb-1 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'
-                    }`}>
+                  <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-slate-200">
                     {t.common.quickAndEasy}
                   </h3>
-                  <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+                  <p className="text-gray-700 dark:text-slate-300">
                     {t.common.quickAndEasyDesc}
                   </p>
                 </div>
@@ -330,17 +313,16 @@ export default function Home() {
 
               <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 ${theme === 'dark'
-                    ? 'bg-gradient-to-br from-purple-600/30 to-pink-600/30'
-                    : 'bg-gradient-to-br from-purple-500 to-pink-500'
+                  ? 'bg-gradient-to-br from-purple-600/30 to-pink-600/30'
+                  : 'bg-gradient-to-br from-purple-500 to-pink-500'
                   } rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <ClockIcon className={`w-6 h-6 ${theme === 'dark' ? 'text-purple-300' : 'text-white'}`} />
+                  <ClockIcon className="w-6 h-6 text-white dark:text-purple-300" />
                 </div>
                 <div>
-                  <h3 className={`text-lg font-semibold mb-1 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'
-                    }`}>
+                  <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-slate-200">
                     {t.common.realTime}
                   </h3>
-                  <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+                  <p className="text-gray-700 dark:text-slate-300">
                     {t.common.realTimeDesc}
                   </p>
                 </div>
@@ -348,17 +330,16 @@ export default function Home() {
 
               <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 ${theme === 'dark'
-                    ? 'bg-gradient-to-br from-pink-600/30 to-rose-600/30'
-                    : 'bg-gradient-to-br from-pink-500 to-rose-500'
+                  ? 'bg-gradient-to-br from-pink-600/30 to-rose-600/30'
+                  : 'bg-gradient-to-br from-pink-500 to-rose-500'
                   } rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <ChartBarIcon className={`w-6 h-6 ${theme === 'dark' ? 'text-pink-300' : 'text-white'}`} />
+                  <ChartBarIcon className="w-6 h-6 text-white dark:text-pink-300" />
                 </div>
                 <div>
-                  <h3 className={`text-lg font-semibold mb-1 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'
-                    }`}>
+                  <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-slate-200">
                     {t.common.detailedAnalysis}
                   </h3>
-                  <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+                  <p className="text-gray-700 dark:text-slate-300">
                     {t.common.detailedAnalysisDesc}
                   </p>
                 </div>
@@ -369,10 +350,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className={`py-20 px-4 ${theme === 'dark'
-          ? 'bg-slate-900/50'
-          : 'bg-white/50'
-        } backdrop-blur-sm`}>
+      <section className={`py-20 px-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm`}>
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-16">
             {t.common.howItWorks}
@@ -383,8 +361,8 @@ export default function Home() {
 
             <div className="grid md:grid-cols-3 gap-12 relative">
               <div className={`backdrop-blur-sm rounded-xl p-8 shadow-xl text-center group hover:scale-105 transition-all duration-300 relative ${theme === 'dark'
-                  ? 'bg-slate-800/90 border border-slate-700/50'
-                  : 'bg-white/90 border border-purple-100'
+                ? 'bg-slate-800/90 border border-slate-700/50'
+                : 'bg-white/90 border border-purple-100'
                 }`}>
                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -395,22 +373,22 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
                     {t.common.createRoom}
                   </h3>
-                  <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+                  <p className="mb-6 text-gray-700 dark:text-slate-300">
                     {t.common.createRoomDesc}
                   </p>
-                  <ul className={`text-sm space-y-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
+                  <ul className="text-sm space-y-3 text-gray-600 dark:text-slate-300">
                     <li className={`flex items-center gap-3 ${theme === 'dark'
-                        ? 'bg-slate-700/50'
-                        : 'bg-gradient-to-r from-indigo-50 to-purple-50'
+                      ? 'bg-slate-700/50'
+                      : 'bg-gradient-to-r from-indigo-50 to-purple-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                      <CheckIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                       <span>{t.common.customizableRoomName}</span>
                     </li>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
-                        ? 'bg-slate-700/50'
-                        : 'bg-gradient-to-r from-indigo-50 to-purple-50'
+                      ? 'bg-slate-700/50'
+                      : 'bg-gradient-to-r from-indigo-50 to-purple-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
+                      <CheckIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       <span>{t.common.differentPointScales}</span>
                     </li>
                   </ul>
@@ -418,8 +396,8 @@ export default function Home() {
               </div>
 
               <div className={`backdrop-blur-sm rounded-xl p-8 shadow-xl text-center group hover:scale-105 transition-all duration-300 relative ${theme === 'dark'
-                  ? 'bg-slate-800/90 border border-slate-700/50'
-                  : 'bg-white/90 border border-purple-100'
+                ? 'bg-slate-800/90 border border-slate-700/50'
+                : 'bg-white/90 border border-purple-100'
                 }`}>
                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -430,22 +408,22 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
                     {t.common.invite}
                   </h3>
-                  <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+                  <p className="mb-6 text-gray-700 dark:text-slate-300">
                     {t.common.inviteDesc}
                   </p>
-                  <ul className={`text-sm space-y-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
+                  <ul className="text-sm space-y-3 text-gray-600 dark:text-slate-300">
                     <li className={`flex items-center gap-3 ${theme === 'dark'
-                        ? 'bg-slate-700/50'
-                        : 'bg-gradient-to-r from-purple-50 to-pink-50'
+                      ? 'bg-slate-700/50'
+                      : 'bg-gradient-to-r from-purple-50 to-pink-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
+                      <CheckIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       <span>{t.common.easySharing}</span>
                     </li>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
-                        ? 'bg-slate-700/50'
-                        : 'bg-gradient-to-r from-purple-50 to-pink-50'
+                      ? 'bg-slate-700/50'
+                      : 'bg-gradient-to-r from-purple-50 to-pink-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-pink-400' : 'text-pink-600'}`} />
+                      <CheckIcon className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                       <span>{t.common.qrCodeSupport}</span>
                     </li>
                   </ul>
@@ -453,8 +431,8 @@ export default function Home() {
               </div>
 
               <div className={`backdrop-blur-sm rounded-xl p-8 shadow-xl text-center group hover:scale-105 transition-all duration-300 relative ${theme === 'dark'
-                  ? 'bg-slate-800/90 border border-slate-700/50'
-                  : 'bg-white/90 border border-purple-100'
+                ? 'bg-slate-800/90 border border-slate-700/50'
+                : 'bg-white/90 border border-purple-100'
                 }`}>
                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                   <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -465,22 +443,22 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-600 mb-4">
                     {t.common.vote}
                   </h3>
-                  <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+                  <p className="mb-6 text-gray-700 dark:text-slate-300">
                     {t.common.voteDesc}
                   </p>
-                  <ul className={`text-sm space-y-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
+                  <ul className="text-sm space-y-3 text-gray-600 dark:text-slate-300">
                     <li className={`flex items-center gap-3 ${theme === 'dark'
-                        ? 'bg-slate-700/50'
-                        : 'bg-gradient-to-r from-pink-50 to-rose-50'
+                      ? 'bg-slate-700/50'
+                      : 'bg-gradient-to-r from-pink-50 to-rose-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-pink-400' : 'text-pink-600'}`} />
+                      <CheckIcon className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                       <span>{t.common.secretVoting}</span>
                     </li>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
-                        ? 'bg-slate-700/50'
-                        : 'bg-gradient-to-r from-pink-50 to-rose-50'
+                      ? 'bg-slate-700/50'
+                      : 'bg-gradient-to-r from-pink-50 to-rose-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-rose-400' : 'text-rose-600'}`} />
+                      <CheckIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                       <span>{t.common.instantResults}</span>
                     </li>
                   </ul>
@@ -493,12 +471,12 @@ export default function Home() {
 
       {/* Footer */}
       <footer className={`${theme === 'dark'
-          ? 'bg-slate-800/90 border-slate-700'
-          : 'bg-white/90 border-purple-100'
+        ? 'bg-slate-800/90 border-slate-700'
+        : 'bg-white/90 border-purple-100'
         } backdrop-blur-sm border-t`}>
         <div className="max-w-6xl mx-auto py-8 px-4">
           <div className="text-center max-w-2xl mx-auto">
-            <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+            <p className="text-gray-700 dark:text-slate-300">
               {t.common.footerText}
             </p>
             <div className={`mt-8 pt-8 ${theme === 'dark' ? 'border-slate-700 text-slate-400' : 'border-purple-100 text-gray-600'} border-t`}>

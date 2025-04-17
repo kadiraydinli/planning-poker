@@ -52,12 +52,10 @@ export default function NameModal({
               duration: 0.3
             }}
           >
-            <h2 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'
-              }`}>
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-slate-200">
               {t.room.enterYourName}
             </h2>
-            <p className={`mb-4 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'
-              }`}>
+            <p className="mb-4 text-gray-700 dark:text-slate-300">
               {t.room.beforeJoining}
             </p>
 

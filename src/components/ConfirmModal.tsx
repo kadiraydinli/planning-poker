@@ -40,8 +40,8 @@ export default function ConfirmModal({
         >
           <motion.div
             className={`${theme === 'dark'
-                ? 'bg-slate-800 border-slate-700'
-                : 'bg-white border-purple-100'
+              ? 'bg-slate-800 border-slate-700'
+              : 'bg-white border-purple-100'
               } border rounded-2xl p-6 w-full max-w-md shadow-xl`}
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -53,12 +53,10 @@ export default function ConfirmModal({
               duration: 0.3
             }}
           >
-            <h2 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'
-              }`}>
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-slate-200">
               {title}
             </h2>
-            <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'
-              }`}>
+            <p className="mb-6 text-gray-700 dark:text-slate-300">
               {message}
             </p>
 
@@ -66,8 +64,8 @@ export default function ConfirmModal({
               <button
                 onClick={onClose}
                 className={`px-4 py-2 rounded-lg font-medium ${theme === 'dark'
-                    ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
-                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                   }`}
               >
                 {cancelButtonText || t.common.cancel}
@@ -77,8 +75,8 @@ export default function ConfirmModal({
                 onClick={onConfirm}
                 disabled={isLoading}
                 className={`px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 ${theme === 'dark'
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white'
                   }`}
               >
                 {isLoading ? (

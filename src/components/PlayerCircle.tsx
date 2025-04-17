@@ -27,7 +27,7 @@ interface PlayerCircleProps {
 export default function PlayerCircle({ users, votes, revealed, onReveal, onReset, currentUserName }: PlayerCircleProps) {
   const { theme } = useTheme();
   const { t } = useLanguage();
-  
+
   // Kullanıcıları joinedAt zamanına göre sıralıyoruz, böylece sıralama sabit kalır
   const userList = useMemo(() => {
     return Object.entries(users)
@@ -43,18 +43,18 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
         return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
       });
   }, [users, votes]);
-  
+
   // En az bir oyun verilmiş mi?
   const hasAnyVotes = Object.keys(votes).length > 0;
 
   return (
-    <motion.div 
-      className={`w-full max-w-7xl mx-auto flex flex-col flex-wrap ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+    <motion.div
+      className="w-full max-w-7xl mx-auto flex flex-col flex-wrap text-gray-900 dark:text-white"
       layout
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       {/* Kullanıcı Listesi */}
-      <motion.div 
+      <motion.div
         className="flex"
         layout="position"
         initial={{ opacity: 1 }}
@@ -66,10 +66,10 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
             // Her kullanıcı için kartın görünümünü belirle
             const isCurrentUser = user.name === currentUserName;
             const hasVoted = user.hasVoted;
-            
+
             return (
-              <motion.div 
-                key={`player-${user.key}`} 
+              <motion.div
+                key={`player-${user.key}`}
                 className={`flex flex-col items-center ${revealed ? 'mb-5 mx-2 md:mx-3' : 'mb-10 mx-4 md:mx-6'}`}
                 layout="position"
                 whileHover={{ scale: 1.05 }}
@@ -77,8 +77,8 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
               >
                 <div className={`
                   ${revealed ? 'w-16 h-16 md:w-20 md:h-20' : 'w-24 h-24 md:w-28 md:h-28'} mb-2 md:mb-3 flex items-center justify-center rounded-full shadow-lg
-                  ${hasVoted 
-                    ? theme === 'dark' ? 'bg-green-600' : 'bg-green-500' 
+                  ${hasVoted
+                    ? theme === 'dark' ? 'bg-green-600' : 'bg-green-500'
                     : theme === 'dark' ? 'bg-slate-700' : 'bg-slate-600'
                   }
                   ${isCurrentUser ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900' : ''}
@@ -92,11 +92,10 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
                     <BsQuestion className={`${revealed ? 'w-10 h-10' : 'w-16 h-16'} text-white`} />
                   )}
                 </div>
-                <span className={`text-xs md:text-sm font-medium px-2 md:px-3 py-0.5 md:py-1 rounded-full ${
-                  theme === 'dark' 
-                    ? 'bg-slate-800 text-white' 
-                    : 'bg-white text-gray-800'
-                } shadow-sm mt-1 truncate max-w-20`}>
+                <span className={`text-xs md:text-sm font-medium px-2 md:px-3 py-0.5 md:py-1 rounded-full ${theme === 'dark'
+                  ? 'bg-slate-800 text-white'
+                  : 'bg-white text-gray-800'
+                  } shadow-sm mt-1 truncate max-w-20`}>
                   {user.name}
                 </span>
                 {user.isAdmin && (
@@ -110,7 +109,7 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
           })}
         </div>
       </motion.div>
-      
+
       {/* Oyları Göster/Sıfırla Butonu - Alt kısımda ama kartlardan yukarıda */}
       <div className="mt-auto fixed bottom-32 left-0 right-0 flex justify-center z-10">
         <motion.button
@@ -119,7 +118,7 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           animate={{
-            backgroundColor: revealed 
+            backgroundColor: revealed
               ? theme === 'dark' ? 'rgb(5, 150, 105)' : 'rgb(16, 185, 129)'
               : theme === 'dark' ? 'rgb(37, 99, 235)' : 'rgb(59, 130, 246)'
           }}

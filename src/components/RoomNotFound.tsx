@@ -19,17 +19,17 @@ export default function RoomNotFound() {
         <div className="flex justify-center mb-10 mt-4">
           <NotFoundCardsSvg />
         </div>
-        <h2 className={`text-3xl font-bold mb-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+        <h2 className="text-3xl font-bold mb-5 text-gray-900 dark:text-white">
           {t.room.roomNotFound}
         </h2>
-        <p className={`mb-10 text-lg ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+        <p className="mb-10 text-lg text-gray-600 dark:text-gray-300">
           {t.room.roomMayBeClosed}
         </p>
         <button
           onClick={() => router.push('/')}
           className={`px-8 py-4 text-lg rounded-lg font-medium ${theme === 'dark'
-              ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-              : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+            : 'bg-indigo-500 hover:bg-indigo-600 text-white'
             } transition-colors duration-300`}
         >
           {t.common.backToHome}
