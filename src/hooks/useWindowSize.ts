@@ -23,10 +23,10 @@ export function useWindowSize(): WindowSize {
 
     // Event listener ekle
     window.addEventListener('resize', handleResize);
-    
+
     // İlk render için hemen çağır
     handleResize();
-    
+
     // Cleanup: event listener'ı kaldır
     return () => window.removeEventListener('resize', handleResize);
   }, []); // Boş dependency array ile yalnızca bir kez çalışır

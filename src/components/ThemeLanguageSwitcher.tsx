@@ -1,12 +1,13 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import { useParams } from 'next/navigation';
+import { QRCodeSVG } from 'qrcode.react';
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { SunIcon, MoonIcon, UserPlusIcon, LanguageIcon } from '@heroicons/react/24/outline';
-import { useParams } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import { toast } from 'react-hot-toast';
 
 export default function ThemeLanguageSwitcher() {
   const { t, language, setLanguage } = useLanguage();
@@ -14,14 +15,14 @@ export default function ThemeLanguageSwitcher() {
   const params = useParams();
   const [showInviteTooltip, setShowInviteTooltip] = useState(false);
   const inviteTooltipRef = useRef<HTMLDivElement>(null);
-  
+
   // Sadece room sayfasında olup olmadığımızı kontrol edelim
   const isRoomPage = params?.id ? true : false;
   const roomUrl = typeof window !== 'undefined' && isRoomPage ? `${window.location.origin}/room/${params.id}` : '';
 
   const copyToClipboard = async () => {
     if (!roomUrl) return;
-    
+
     try {
       await navigator.clipboard.writeText(roomUrl);
       toast.success(t.common.linkCopied);
@@ -50,22 +51,20 @@ export default function ThemeLanguageSwitcher() {
         <div className="relative">
           <button
             onClick={() => setShowInviteTooltip(!showInviteTooltip)}
-            className={`group flex items-center justify-center gap-1 px-4 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${
-              theme === 'dark' 
-                ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30' 
+            className={`group flex items-center justify-center gap-1 px-4 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${theme === 'dark'
+                ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30'
                 : 'bg-white/30 text-gray-600 hover:bg-white/40 hover:text-gray-800 shadow-purple-500/10'
-            }`}
+              }`}
           >
             <UserPlusIcon className="w-5 h-5" />
             <span className="text-sm font-medium tracking-wide">{t.common.invite}</span>
           </button>
-          
+
           {showInviteTooltip && (
-            <div 
+            <div
               ref={inviteTooltipRef}
-              className={`absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-10 w-80 ${
-                theme === 'dark' ? 'bg-slate-800/90' : 'bg-white/90'
-              } p-4 backdrop-blur-sm border ${theme === 'dark' ? 'border-slate-700/50' : 'border-purple-100'}`}
+              className={`absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-10 w-80 ${theme === 'dark' ? 'bg-slate-800/90' : 'bg-white/90'
+                } p-4 backdrop-blur-sm border ${theme === 'dark' ? 'border-slate-700/50' : 'border-purple-100'}`}
             >
               <div className="flex flex-col gap-4">
                 <div className="text-center mb-1">
@@ -74,25 +73,23 @@ export default function ThemeLanguageSwitcher() {
                     {t.common.scanToJoin}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-2 mt-1">
                   <input
                     type="text"
                     value={roomUrl}
                     readOnly
-                    className={`flex-1 px-3 py-2 rounded-lg text-sm ${
-                      theme === 'dark'
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm ${theme === 'dark'
                         ? 'bg-slate-700 border-slate-600 text-white'
                         : 'border border-gray-300 text-gray-900'
-                    } focus:ring focus:ring-indigo-300`}
+                      } focus:ring focus:ring-indigo-300`}
                   />
                   <button
                     onClick={copyToClipboard}
-                    className={`p-2 rounded-lg ${
-                      theme === 'dark' 
-                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' 
+                    className={`p-2 rounded-lg ${theme === 'dark'
+                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`}
+                      }`}
                     title={t.common.copyLink}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -105,14 +102,13 @@ export default function ThemeLanguageSwitcher() {
           )}
         </div>
       )}
-      
+
       <button
         onClick={toggleTheme}
-        className={`group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${
-          theme === 'dark' 
-            ? 'bg-slate-800/40 text-yellow-300 hover:bg-slate-700/50 hover:text-yellow-200 shadow-slate-900/30' 
+        className={`group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${theme === 'dark'
+            ? 'bg-slate-800/40 text-yellow-300 hover:bg-slate-700/50 hover:text-yellow-200 shadow-slate-900/30'
             : 'bg-white/30 text-yellow-500 hover:bg-white/40 hover:text-yellow-600 shadow-purple-500/10'
-        }`}
+          }`}
         aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
       >
         {theme === 'dark' ? (
@@ -121,14 +117,13 @@ export default function ThemeLanguageSwitcher() {
           <MoonIcon className="w-5 h-5 drop-shadow" />
         )}
       </button>
-      
+
       <button
         onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
-        className={`group flex items-center justify-center gap-2 px-4 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${
-          theme === 'dark' 
-            ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30' 
+        className={`group flex items-center justify-center gap-2 px-4 h-10 rounded-xl transition-all duration-200 shadow-lg backdrop-blur-sm ${theme === 'dark'
+            ? 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/50 hover:text-white shadow-slate-900/30'
             : 'bg-white/30 text-gray-600 hover:bg-white/40 hover:text-gray-800 shadow-purple-500/10'
-        }`}
+          }`}
         aria-label={language === 'tr' ? t.common.switchToEnglish : t.common.switchToTurkish}
       >
         <span className="text-sm font-medium tracking-wide">{language === 'tr' ? t.common.langCodeEn : t.common.langCodeTr}</span>

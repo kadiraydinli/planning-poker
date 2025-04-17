@@ -28,11 +28,11 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T)
     if (typeof window !== 'undefined') {
       try {
         // Eğer değer string ise direkt kaydedelim, değilse JSON.stringify kullanalım
-        const valueToStore = 
-          typeof storedValue === 'string' 
-            ? storedValue 
+        const valueToStore =
+          typeof storedValue === 'string'
+            ? storedValue
             : JSON.stringify(storedValue);
-            
+
         window.localStorage.setItem(key, valueToStore);
       } catch (error) {
         console.error(error);

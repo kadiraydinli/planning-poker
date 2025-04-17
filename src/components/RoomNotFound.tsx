@@ -1,8 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import NotFoundCardsSvg from '@/components/NotFoundCardsSvg';
 
@@ -26,11 +27,10 @@ export default function RoomNotFound() {
         </p>
         <button
           onClick={() => router.push('/')}
-          className={`px-8 py-4 text-lg rounded-lg font-medium ${
-            theme === 'dark'
+          className={`px-8 py-4 text-lg rounded-lg font-medium ${theme === 'dark'
               ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
               : 'bg-indigo-500 hover:bg-indigo-600 text-white'
-          } transition-colors duration-300`}
+            } transition-colors duration-300`}
         >
           {t.common.backToHome}
         </button>
