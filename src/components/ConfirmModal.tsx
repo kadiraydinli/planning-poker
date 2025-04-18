@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -28,6 +28,19 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
+
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
