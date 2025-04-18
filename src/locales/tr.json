@@ -49,7 +49,18 @@
     "backToHome": "Ana Sayfaya Dön",
     "voteText": "oy",
     "votesText": "oy",
-    "average": "Ortalama"
+    "average": "Ortalama",
+    "settings": "Ayarlar",
+    "lightMode": "Aydınlık Mod",
+    "darkMode": "Karanlık Mod",
+    "changeName": "İsim Değiştir",
+    "nameUpdated": "İsminiz güncellendi!",
+    "nameUpdateFailed": "İsim güncelleme başarısız oldu!",
+    "changeYourName": "İsminizi Değiştirin",
+    "enterNewName": "Yeni isminizi girin",
+    "update": "Güncelle",
+    "updating": "Güncelleniyor...",
+    "confirmReset": "Tüm oyları sıfırlamak istediğinizden emin misiniz?"
   },
   "room": {
     "roomName": "Oda Adı",

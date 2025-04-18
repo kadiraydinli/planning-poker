@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, updateDoc, getDoc, deleteDoc, deleteField } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, getDoc, deleteDoc, deleteField, FieldValue } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { nanoid } from 'nanoid';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { db } from '@/lib/firebase';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -14,12 +15,11 @@ import Header from '@/components/Header';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { getScaleValues } from '@/lib/scaleTypes';
 import NameModal from '@/components/NameModal';
-import { ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
 import PlayerCircle from '@/components/PlayerCircle';
-import { motion, AnimatePresence } from 'framer-motion';
 import RoomNotFound from '@/components/RoomNotFound';
 import ConfirmModal from '@/components/ConfirmModal';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
+import RoomHeader from '@/components/RoomHeader';
 
 interface Vote {
   [key: string]: string;
@@ -336,38 +336,61 @@ export default function RoomPage() {
     }
   };
 
-  const handleLeaveRoom = async () => {
-    if (!userSessionRef.current.userKey || !id) return;
+  const handleUpdateName = async (newName: string) => {
+    if (!newName.trim()) {
+      toast.error(t.room.enterNameFirst);
+      return;
+    }
+
+    if (!userSessionRef.current.userKey) {
+      toast.error(t.room.error);
+      return;
+    }
+
+    // Aynı isimde başka bir kullanıcı var mı kontrol et
+    if (room?.users) {
+      const existingUser = Object.values(room.users).find(user =>
+        user.name.toLowerCase() === newName.toLowerCase() &&
+        user.sessionId !== userSessionRef.current.sessionId
+      );
+
+      if (existingUser) {
+        toast.error(t.room.userExists);
+        return;
+      }
+    }
 
     try {
       const roomId = id as string;
       const roomRef = doc(db, 'rooms', roomId);
-      const roomDoc = await getDoc(roomRef);
 
-      if (!roomDoc.exists()) {
-        toast.error(t.room.roomNotFound);
-        router.push('/');
-        return;
+      // Eğer kullanıcının oyu varsa, oyunu da güncelle
+      const updates: Record<string, string | FieldValue> = {};
+
+      // Kullanıcı adını güncelle
+      updates[`users.${userSessionRef.current.userKey}.name`] = newName;
+
+      // Eğer eski isimle oyu varsa, oyları da güncelle
+      if (room?.votes && room.votes[userName]) {
+        const currentVote = room.votes[userName];
+        updates[`votes.${newName}`] = currentVote;
+        updates[`votes.${userName}`] = deleteField();
       }
 
-      const roomData = roomDoc.data();
-      const currentUser = roomData.users[userSessionRef.current.userKey];
+      await updateDoc(roomRef, updates);
 
-      // Kullanıcı kurucu mu kontrol et
-      const isAdmin = currentUser?.isAdmin || false;
+      // localStorage'daki ismi güncelle
+      setUserName(newName);
 
-      if (isAdmin) {
-        // Kurucu odadan ayrılmak istiyor, önce onay modalı gösterelim
-        setShowLeaveConfirmModal(true);
-        return;
-      }
-
-      // Normal kullanıcı, onay modalı göstermeden doğrudan çıkış yap
-      await leaveRoomAction(false);
+      toast.success(t.common.nameUpdated);
     } catch (error) {
-      console.error('Error leaving room:', error);
-      toast.error(t.room.error);
+      console.error('Error updating user name:', error);
+      toast.error(t.common.nameUpdateFailed);
     }
+  };
+
+  const handleLeaveRoom = () => {
+    setShowLeaveConfirmModal(true);
   };
 
   const leaveRoomAction = async (isAdmin: boolean) => {
@@ -521,7 +544,12 @@ export default function RoomPage() {
         />
       )}
 
-      <Header />
+      <RoomHeader
+        onLeaveRoom={handleLeaveRoom}
+        onUpdateName={handleUpdateName}
+      />
+      <div className="fixed top-4 right-4 z-10 flex items-center gap-2">
+      </div>
 
       <div className="w-screen h-[50vh] relative items-center justify-center">
         {/* Oda adı */}
@@ -685,20 +713,6 @@ export default function RoomPage() {
             })}
           </div>
         </div>
-      </div>
-
-      {/* Odadan Çıkış Butonu */}
-      <div className="fixed bottom-20 right-6">
-        <button
-          onClick={handleLeaveRoom}
-          className={`flex items-center justify-center gap-2 h-12 px-5 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all ${theme === 'dark'
-            ? 'bg-red-600 hover:bg-red-700 text-white'
-            : 'bg-red-500 hover:bg-red-600 text-white'
-            }`}
-        >
-          <ArrowLeftOnRectangleIcon className="h-5 w-5" />
-          {t.room.leaveRoom}
-        </button>
       </div>
 
       {/* Kullanıcı Adı Modal */}

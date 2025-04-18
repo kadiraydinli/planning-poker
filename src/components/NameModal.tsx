@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -13,6 +13,9 @@ interface NameModalProps {
   showCancelButton?: boolean;
   submitButtonText?: string;
   loadingText?: string;
+  modalTitle?: string;
+  modalDescription?: string;
+  initialValue?: string;
 }
 
 export default function NameModal({
@@ -22,11 +25,20 @@ export default function NameModal({
   onSubmit,
   showCancelButton = true,
   submitButtonText,
-  loadingText
+  loadingText,
+  modalTitle,
+  modalDescription,
+  initialValue = ''
 }: NameModalProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(initialValue);
+
+  useEffect(() => {
+    if (initialValue) {
+      setValue(initialValue);
+    }
+  }, [initialValue]);
 
   return (
     <AnimatePresence>
@@ -53,11 +65,11 @@ export default function NameModal({
               duration: 0.3
             }}
           >
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-slate-200">
-              {t.room.enterYourName}
+            <h2 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>
+              {modalTitle || t.room.enterYourName}
             </h2>
-            <p className="mb-4 text-gray-700 dark:text-slate-300">
-              {t.room.beforeJoining}
+            <p className={`mb-4 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
+              {modalDescription || t.room.beforeJoining}
             </p>
 
             <form onSubmit={(e) => {
@@ -94,9 +106,9 @@ export default function NameModal({
                 <button
                   type="submit"
                   disabled={isLoading || !value?.trim()}
-                  className={`px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 ${theme === 'dark'
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
-                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+                  className={`px-4 py-2 rounded-lg font-medium text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-50 ${theme === 'dark'
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                    : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                     }`}
                 >
                   {isLoading ? (

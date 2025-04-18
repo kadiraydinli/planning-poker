@@ -49,7 +49,18 @@
     "backToHome": "Back to Home",
     "voteText": "vote",
     "votesText": "votes",
-    "average": "Average"
+    "average": "Average",
+    "settings": "Settings",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "changeName": "Change Name",
+    "nameUpdated": "Your name has been updated!",
+    "nameUpdateFailed": "Name update failed!",
+    "changeYourName": "Change Your Name",
+    "enterNewName": "Enter your new name",
+    "update": "Update",
+    "updating": "Updating...",
+    "confirmReset": "Are you sure you want to reset all votes?"
   },
   "room": {
     "roomName": "Room Name",
