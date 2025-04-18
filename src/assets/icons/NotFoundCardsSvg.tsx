@@ -12,7 +12,7 @@ export default function NotFoundCardsSvg() {
       viewBox="0 0 240 260"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`opacity-100 dark:opacity-90 animate-floating`}
+      className={`${theme === 'dark' ? 'opacity-90' : 'opacity-100'} animate-floating`}
     >
       {/* Kart 1 - Arkadaki kart */}
       <g transform="translate(45, 40) rotate(-15)">

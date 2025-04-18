@@ -34,7 +34,7 @@ export default function ThemeLanguageSwitcher() {
         aria-label={language === 'tr' ? t.common.switchToEnglish : t.common.switchToTurkish}
       >
         <span className="text-sm font-medium tracking-wide">{language === 'tr' ? t.common.langCodeEn : t.common.langCodeTr}</span>
-        <LanguageIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <LanguageIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`} />
       </button>
     </div>
   );

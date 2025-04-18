@@ -49,7 +49,7 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
 
   return (
     <motion.div
-      className="w-full max-w-7xl mx-auto flex flex-col flex-wrap text-gray-900 dark:text-white"
+      className={`w-full max-w-7xl mx-auto flex flex-col flex-wrap ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
       layout
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >

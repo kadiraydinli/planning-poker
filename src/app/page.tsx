@@ -186,12 +186,20 @@ export default function Home() {
                 } bg-clip-text text-transparent leading-normal`}>
                 {t.common.appName}
               </h1>
-              <p className={'text-xl text-gray-700 dark:text-slate-200'}>
+              <p className={`text-xl ${theme === 'dark' ? 'text-slate-200' : 'text-gray-700'}`}>
                 {t.common.appDescription}
               </p>
             </div>
 
-            <div className="bg-white/90 dark:bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 space-y-6 shadow-xl border border-purple-100 dark:border-slate-700/50">
+            <div className={`
+                backdrop-blur-lg
+                rounded-2xl 
+                p-8 
+                space-y-6 
+                shadow-xl 
+                border 
+                ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/90 border-purple-100'}
+              `}>
               <form
                 className="space-y-6"
                 onSubmit={(e) => {
@@ -200,7 +208,7 @@ export default function Home() {
                 }}
               >
                 <div className="relative">
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-slate-300">
+                  <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.room.name}
                   </label>
                   <input
@@ -216,7 +224,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-300">
+                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.room.pointScale}
                   </label>
                   <div className="grid grid-cols-2 gap-4">
@@ -287,8 +295,18 @@ export default function Home() {
           </div>
 
           {/* Right Side - Features */}
-          <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg rounded-2xl p-8 space-y-6 shadow-xl border border-purple-100 dark:border-slate-700">
-            <h2 className="text-2xl font-bold mb-8 text-gray-900 dark:text-slate-200">
+          <div
+            className={`
+              backdrop-blur-lg
+              rounded-2xl
+              p-8
+              space-y-6
+              shadow-xl 
+              border 
+              ${theme === 'dark' ? 'bg-slate-800/90 border-slate-700' : 'bg-white/90 border-purple-100'}
+            `}>
+            <h2 className={`text-2xl font-bold mb-8 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'
+              }`}>
               {t.common.quickAndEasy}
             </h2>
             <div className="space-y-6">
@@ -297,13 +315,13 @@ export default function Home() {
                   ? 'bg-gradient-to-br from-indigo-600/30 to-purple-600/30'
                   : 'bg-gradient-to-br from-indigo-500 to-purple-500'
                   } rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <BoltIcon className="w-6 h-6 text-white dark:text-indigo-300" />
+                  <BoltIcon className={`w-6 h-6 ${theme === 'dark' ? 'text-indigo-300' : 'text-white'}`} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-slate-200">
+                  <h3 className={`text-lg font-semibold mb-1 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>
                     {t.common.quickAndEasy}
                   </h3>
-                  <p className="text-gray-700 dark:text-slate-300">
+                  <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.common.quickAndEasyDesc}
                   </p>
                 </div>
@@ -314,13 +332,13 @@ export default function Home() {
                   ? 'bg-gradient-to-br from-purple-600/30 to-pink-600/30'
                   : 'bg-gradient-to-br from-purple-500 to-pink-500'
                   } rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <ClockIcon className="w-6 h-6 text-white dark:text-purple-300" />
+                  <ClockIcon className={`w-6 h-6 ${theme === 'dark' ? 'text-purple-300' : 'text-white'}`} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-slate-200">
+                  <h3 className={`text-lg font-semibold mb-1 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>
                     {t.common.realTime}
                   </h3>
-                  <p className="text-gray-700 dark:text-slate-300">
+                  <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.common.realTimeDesc}
                   </p>
                 </div>
@@ -331,13 +349,13 @@ export default function Home() {
                   ? 'bg-gradient-to-br from-pink-600/30 to-rose-600/30'
                   : 'bg-gradient-to-br from-pink-500 to-rose-500'
                   } rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <ChartBarIcon className="w-6 h-6 text-white dark:text-pink-300" />
+                  <ChartBarIcon className={`w-6 h-6 ${theme === 'dark' ? 'text-pink-300' : 'text-white'}`} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-slate-200">
+                  <h3 className={`text-lg font-semibold mb-1 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>
                     {t.common.detailedAnalysis}
                   </h3>
-                  <p className="text-gray-700 dark:text-slate-300">
+                  <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.common.detailedAnalysisDesc}
                   </p>
                 </div>
@@ -348,7 +366,10 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className={`py-20 px-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm`}>
+      <section className={`py-20 px-4 ${theme === 'dark'
+        ? 'bg-slate-900/50'
+        : 'bg-white/50'
+        } backdrop-blur-sm`}>
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-16">
             {t.common.howItWorks}
@@ -371,22 +392,22 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
                     {t.common.createRoom}
                   </h3>
-                  <p className="mb-6 text-gray-700 dark:text-slate-300">
+                  <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.common.createRoomDesc}
                   </p>
-                  <ul className="text-sm space-y-3 text-gray-600 dark:text-slate-300">
+                  <ul className={`text-sm space-y-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
                       ? 'bg-slate-700/50'
                       : 'bg-gradient-to-r from-indigo-50 to-purple-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`} />
                       <span>{t.common.customizableRoomName}</span>
                     </li>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
                       ? 'bg-slate-700/50'
                       : 'bg-gradient-to-r from-indigo-50 to-purple-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
                       <span>{t.common.differentPointScales}</span>
                     </li>
                   </ul>
@@ -406,22 +427,22 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
                     {t.common.invite}
                   </h3>
-                  <p className="mb-6 text-gray-700 dark:text-slate-300">
+                  <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.common.inviteDesc}
                   </p>
-                  <ul className="text-sm space-y-3 text-gray-600 dark:text-slate-300">
+                  <ul className={`text-sm space-y-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
                       ? 'bg-slate-700/50'
                       : 'bg-gradient-to-r from-purple-50 to-pink-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
                       <span>{t.common.easySharing}</span>
                     </li>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
                       ? 'bg-slate-700/50'
                       : 'bg-gradient-to-r from-purple-50 to-pink-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-pink-400' : 'text-pink-600'}`} />
                       <span>{t.common.qrCodeSupport}</span>
                     </li>
                   </ul>
@@ -441,22 +462,22 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-rose-600 mb-4">
                     {t.common.vote}
                   </h3>
-                  <p className="mb-6 text-gray-700 dark:text-slate-300">
+                  <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                     {t.common.voteDesc}
                   </p>
-                  <ul className="text-sm space-y-3 text-gray-600 dark:text-slate-300">
+                  <ul className={`text-sm space-y-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
                       ? 'bg-slate-700/50'
                       : 'bg-gradient-to-r from-pink-50 to-rose-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-pink-400' : 'text-pink-600'}`} />
                       <span>{t.common.secretVoting}</span>
                     </li>
                     <li className={`flex items-center gap-3 ${theme === 'dark'
                       ? 'bg-slate-700/50'
                       : 'bg-gradient-to-r from-pink-50 to-rose-50'
                       } p-3 rounded-lg`}>
-                      <CheckIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                      <CheckIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-rose-400' : 'text-rose-600'}`} />
                       <span>{t.common.instantResults}</span>
                     </li>
                   </ul>
@@ -474,7 +495,7 @@ export default function Home() {
         } backdrop-blur-sm border-t`}>
         <div className="max-w-6xl mx-auto py-8 px-4">
           <div className="text-center max-w-2xl mx-auto">
-            <p className="text-gray-700 dark:text-slate-300">
+            <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
               {t.common.footerText}
             </p>
             <div className={`mt-8 pt-8 ${theme === 'dark' ? 'border-slate-700 text-slate-400' : 'border-purple-100 text-gray-600'} border-t`}>

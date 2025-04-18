@@ -17,10 +17,10 @@ export default function RoomNotFound() {
         <div className="flex justify-center mb-10 mt-4">
           <NotFoundCardsSvg />
         </div>
-        <h2 className="text-3xl font-bold mb-5 text-gray-900 dark:text-white">
+        <h2 className={`text-3xl font-bold mb-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
           {t.room.roomNotFound}
         </h2>
-        <p className="mb-10 text-lg text-gray-600 dark:text-gray-300">
+        <p className={`mb-10 text-lg ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
           {t.room.roomMayBeClosed}
         </p>
         <button

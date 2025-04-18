@@ -502,7 +502,7 @@ export default function RoomPage() {
     return (
       <main className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4 flex items-center justify-center`}>
         <Header />
-        <div className="text-gray-900 dark:text-white text-xl">{t.common.loading}</div>
+        <div className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'} text-xl`}>{t.common.loading}</div>
       </main>
     );
   }
@@ -552,10 +552,10 @@ export default function RoomPage() {
       </div>
 
       <div className="w-screen h-[50vh] relative items-center justify-center">
-        {/* Oda adı */}
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">{room.name}</h1>
+        <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} text-center mb-6`}>
+          {room.name}
+        </h1>
 
-        {/* Kullanıcı listesi ve butonlar */}
         <div className="flex items-center justify-center w-full h-[60vh] overflow-visible flex-wrap"
           style={{
             width: room.revealed ? '70%' : '100%',
@@ -582,12 +582,14 @@ export default function RoomPage() {
               transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.2 }}
               style={{ maxHeight: "60vh", overflowY: "auto" }}
             >
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">{t.common.voteResults}</h2>
+              <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 text-center`}>
+                {t.common.voteResults}
+              </h2>
 
               {/* Pie Chart ve Ortalama göster */}
               <div className="flex flex-col items-center">
                 {/* Pie Chart */}
-                <div className="w-full max-w-md h-64 mb-4 p-2 rounded-xl bg-[rgba(255,255,255,0.8)] dark:bg-[rgba(255,255,255,0.05)]">
+                <div className="w-full max-w-md h-64 mb-4 p-2 rounded-xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -674,11 +676,11 @@ export default function RoomPage() {
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: COLORS[colorIndex] }}
                           ></div>
-                          <span className="text-sm font-medium text-gray-800 dark:text-slate-200">
+                          <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>
                             {entry.point}
                           </span>
                         </div>
-                        <span className="text-lg font-bold text-slate-800 dark:text-white">
+                        <span className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
                           {entry.count} {entry.count === 1 ? t.common.voteText : t.common.votesText}
                         </span>
                       </motion.div>
@@ -701,7 +703,7 @@ export default function RoomPage() {
                   key={point}
                   onClick={() => handleVote(point)}
                   className={`w-14 h-20 rounded-lg text-center font-medium transition-colors transform ${selectedPoint === point
-                    ? "bg-indigo-500 dark:bg-indigo-600 text-white -translate-y-3"
+                    ? `${theme === 'dark' ? 'bg-indigo-600' : 'bg-indigo-500'} text-white -translate-y-3`
                     : theme === 'dark'
                       ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
                       : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md'

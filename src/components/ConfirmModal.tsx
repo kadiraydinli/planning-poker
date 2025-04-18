@@ -54,10 +54,10 @@ export default function ConfirmModal({
               duration: 0.3
             }}
           >
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-slate-200">
+            <h2 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>
               {title}
             </h2>
-            <p className="mb-6 text-gray-700 dark:text-slate-300">
+            <p className={`mb-6 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
               {message}
             </p>
 
