@@ -139,7 +139,6 @@ export default function RoomPage() {
   // Firestore session
   useEffect(() => {
     if (userSessionRef.current.isLeaving) {
-      // Eğer kullanıcı çıkış yapıyorsa, Firestore işlemini yapmayı atla
       return;
     }
 
@@ -153,18 +152,9 @@ export default function RoomPage() {
       if (userId) {
         localStorage.setItem(`planningPokerUserId_${roomId}`, userId);
       }
-    } else {
-      // Eğer önceki oturumdan userId varsa, onu kullanalım
-      if (!userId && localStorage.getItem(`planningPokerUserId_${roomId}`)) {
-        // Önceki userId'yi kullanalım
-        const storedUserId = localStorage.getItem(`planningPokerUserId_${roomId}`);
-        if (storedUserId) {
-          console.log('Önceki userId kullanılıyor:', storedUserId);
-        }
-      } else if (userId) {
-        // Güncel userId'yi kaydedelim
-        localStorage.setItem(`planningPokerUserId_${roomId}`, userId);
-      }
+    } else if (userId && !localStorage.getItem(`planningPokerUserId_${roomId}`)) {
+      // Güncel userId'yi kaydedelim
+      localStorage.setItem(`planningPokerUserId_${roomId}`, userId);
     }
 
     userSessionRef.current.sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
