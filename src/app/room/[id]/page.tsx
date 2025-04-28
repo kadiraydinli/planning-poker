@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, updateDoc, getDoc, deleteDoc, deleteField, FieldValue } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, getDoc, deleteField, FieldValue } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { nanoid } from 'nanoid';
@@ -13,6 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/Header';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useUserId } from '@/hooks/useUserId';
 import { getScaleValues } from '@/lib/scaleTypes';
 import NameModal from '@/components/NameModal';
 import PlayerCircle from '@/components/PlayerCircle';
@@ -30,6 +31,7 @@ interface User {
   isAdmin: boolean;
   joinedAt: string;
   sessionId?: string;
+  userId?: string;
 }
 
 interface Users {
@@ -44,6 +46,7 @@ interface Room {
   users: Users;
   adminLeaving?: boolean;
   adminLeavingTimestamp?: string;
+  adminId?: string;
 }
 
 // Renk paleti - daha canlı ve doygun renkler
@@ -75,6 +78,7 @@ export default function RoomPage() {
   const [points, setPoints] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [roomNotFound, setRoomNotFound] = useState(false);
+  const userId = useUserId();
 
   // Kullanıcı session bilgilerini ref olarak sakla
   const userSessionRef = useRef({
@@ -87,6 +91,53 @@ export default function RoomPage() {
 
   // Yükleme timeout referansı
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleAutoLeaveRoom = useCallback(async () => {
+    // Eğer odaya katılmış bir kullanıcı yoksa, çıkış işlemi yapma
+    if (!userSessionRef.current.userKey || !id || userSessionRef.current.isLeaving) return;
+
+    try {
+      const roomId = id as string;
+      const roomRef = doc(db, 'rooms', roomId);
+      const isAdmin = room?.users?.[userSessionRef.current.userKey]?.isAdmin || false;
+
+      if (isAdmin) {
+        // Admin için özel işlem (odadaki diğer kullanıcılara uyarı gönder)
+        if (room?.users && Object.values(room.users).length > 1) {
+          await updateDoc(roomRef, {
+            adminLeaving: true,
+            adminLeavingTimestamp: new Date().toISOString()
+          });
+        }
+
+        // Admin odadan çıkarken kendisini de odadan kaldır
+        const updates: Record<string, ReturnType<typeof deleteField> | string | boolean> = {};
+        updates[`users.${userSessionRef.current.userKey}`] = deleteField();
+
+        // Eğer adminin oyu varsa, onu da sil
+        if (userName && room?.votes && room.votes[userName]) {
+          updates[`votes.${userName}`] = deleteField();
+        }
+
+        // Firestore güncellemesini yap
+        await updateDoc(roomRef, updates);
+      } else {
+        // Normal kullanıcı için kullanıcı bilgisini ve oylarını sil
+        const updates: Record<string, ReturnType<typeof deleteField>> = {};
+        updates[`users.${userSessionRef.current.userKey}`] = deleteField();
+
+        // Eğer kullanıcının oyu varsa, sil
+        if (userName && room?.votes && room.votes[userName]) {
+          updates[`votes.${userName}`] = deleteField();
+        }
+
+        // Firestore güncellemesini yap
+        await updateDoc(roomRef, updates);
+      }
+    } catch (error) {
+      console.error('Error in auto leave room:', error);
+    }
+  }, [id, room, userName]);
 
   // Firestore session
   useEffect(() => {
@@ -184,8 +235,10 @@ export default function RoomPage() {
             }
           }
           else if (userName && !userSessionRef.current.isLeaving) {
-            // Kullanıcı henüz odada değil ama adı var, ekle
-            await addUserToFirestore(roomId, userName, userSessionRef.current.sessionId);
+            // Kullanıcı henüz odada değil ama adı var
+            // Eğer kullanıcı ID'si odanın adminId'si ile eşleşiyorsa, admin olarak ekle
+            const isAdmin = roomData.adminId === userId;
+            await addUserToFirestore(roomId, userName, userSessionRef.current.sessionId, isAdmin);
           }
           else if (!userSessionRef.current.isLeaving) {
             // Kullanıcı yok ve adı da yok, modal göster
@@ -223,10 +276,25 @@ export default function RoomPage() {
       }
       unsubscribe();
     };
-  }, [id, userName, isLoading]);
+  }, [id, userName, isLoading, userId]);
+
+  // Sekme kapatıldığında çalışacak otomatik çıkış efekti
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (userSessionRef.current.userKey && !userSessionRef.current.isLeaving) {
+        handleAutoLeaveRoom();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [id, room, handleAutoLeaveRoom]);
 
   // Kullanıcıyı odaya ekle
-  const addUserToFirestore = async (roomId: string, name: string, sessionId: string) => {
+  const addUserToFirestore = async (roomId: string, name: string, sessionId: string, isAdmin: boolean = false) => {
     if (!name || !roomId || !sessionId) return null;
 
     try {
@@ -236,9 +304,10 @@ export default function RoomPage() {
       await updateDoc(roomRef, {
         [`users.${newUserKey}`]: {
           name: name,
-          isAdmin: false,
+          isAdmin: isAdmin,
           joinedAt: new Date().toISOString(),
-          sessionId: sessionId
+          sessionId: sessionId,
+          userId: userId
         }
       });
 
@@ -277,10 +346,13 @@ export default function RoomPage() {
       const roomId = id as string;
 
       if (!userSessionRef.current.userKey) {
+        // Eğer kullanıcı ID'si odanın adminId'si ile eşleşiyorsa, admin olarak ekle
+        const isAdmin = room?.adminId === userId;
         await addUserToFirestore(
           roomId,
           name,
-          userSessionRef.current.sessionId
+          userSessionRef.current.sessionId,
+          isAdmin
         );
       }
 
@@ -405,7 +477,7 @@ export default function RoomPage() {
       const roomRef = doc(db, 'rooms', roomId);
 
       if (isAdmin) {
-        // Admin için doğrudan odayı sil
+        // Admin için işlem
         try {
           if (room?.users && Object.values(room.users).length > 1) {
             // Odada başka kullanıcılar varsa, uyarı mesajı göndermeyi dene
@@ -423,9 +495,18 @@ export default function RoomPage() {
             }
           }
 
-          // Odayı silmeyi dene
-          await deleteDoc(roomRef);
-          toast.success(t.room.roomClosed);
+          // Admin odadan çıkarken kendisini kaldır ama odayı silme
+          const updates: Record<string, ReturnType<typeof deleteField>> = {};
+          updates[`users.${userSessionRef.current.userKey}`] = deleteField();
+
+          // Eğer adminin oyu varsa, onu da sil
+          if (userName && room?.votes && room.votes[userName]) {
+            updates[`votes.${userName}`] = deleteField();
+          }
+
+          // Firestore güncellemesini yap
+          await updateDoc(roomRef, updates);
+          toast.success(t.room.leftRoom);
 
           // Başarılı olursa localStorage'dan session ID'yi sil
           localStorage.removeItem(`planningPokerSession_${roomId}`);
@@ -433,7 +514,7 @@ export default function RoomPage() {
           // Ana sayfaya yönlendir
           router.push('/');
         } catch (error) {
-          console.error('Error deleting room:', error);
+          console.error('Error leaving room as admin:', error);
           toast.error(t.room.error);
 
           // Hata olursa da çıkış yap
@@ -441,7 +522,7 @@ export default function RoomPage() {
           router.push('/');
         }
       } else {
-        // Normal kullanıcı için kullanıcı bilgisini ve oylarını sil
+        // Normal kullanıcı için kullanıcı bilgisini ve oylarını sil (bu kısmı aynı)
         try {
           const roomDoc = await getDoc(roomRef);
 
@@ -732,9 +813,11 @@ export default function RoomPage() {
       <ConfirmModal
         isOpen={showLeaveConfirmModal}
         onClose={() => setShowLeaveConfirmModal(false)}
-        onConfirm={() => leaveRoomAction(true)}
+        onConfirm={() => leaveRoomAction(room?.users?.[userSessionRef.current.userKey || '']?.isAdmin || false)}
         title={t.room.confirmLeave}
-        message={t.room.confirmLeaveAdmin}
+        message={room?.users?.[userSessionRef.current.userKey || '']?.isAdmin
+          ? t.room.confirmLeaveAdmin
+          : "Odadan ayrılmak istediğinize emin misiniz? Oyunuza verdiğiniz oylar silinecektir."}
         confirmButtonText={t.room.leaveRoom}
         isLoading={isLeavingRoom}
       />

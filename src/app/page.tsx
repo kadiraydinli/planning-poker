@@ -12,6 +12,7 @@ import { db } from '@/lib/firebase';
 import { BoltIcon, ClockIcon, ChartBarIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { scrumScales } from '@/lib/scaleTypes';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useUserId } from '@/hooks/useUserId';
 import Header from '@/components/Header';
 import NameModal from '@/components/NameModal';
 import DecorativeElements from '@/assets/components/DecorativeElements';
@@ -28,6 +29,7 @@ export default function Home() {
   const [userName, setUserName] = useLocalStorage('planningPokerUserName', '');
   const [roomId, setRoomId] = useState('');
   const [isJoining, setIsJoining] = useState(false);
+  const userId = useUserId();
 
   const handleCreateRoom = async () => {
     if (!roomName.trim()) {
@@ -57,7 +59,6 @@ export default function Home() {
     setRoomId(newRoomId);
 
     try {
-      // Session ID oluştur
       const sessionId = nanoid(16);
       localStorage.setItem(`planningPokerSession_${newRoomId}`, sessionId);
 
@@ -67,7 +68,8 @@ export default function Home() {
         votes: {},
         revealed: false,
         users: {},
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        adminId: userId
       });
 
       setIsCreating(false);
