@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { useParams } from 'next/navigation';
-import { ArrowLeftOnRectangleIcon, SunIcon, MoonIcon, LanguageIcon, Cog6ToothIcon, UserPlusIcon, UserIcon } from '@heroicons/react/24/outline';
+import { SunIcon, MoonIcon, LanguageIcon, Cog6ToothIcon, UserPlusIcon, UserIcon, ArrowLeftEndOnRectangleIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -322,7 +322,7 @@ export default function RoomHeader({ onLeaveRoom, onUpdateName, isAdmin = false 
                     : 'hover:bg-red-100/70 text-red-600'
                     }`}
                 >
-                  <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                  {isAdmin ? <TrashIcon className="w-5 h-5" /> : <ArrowLeftEndOnRectangleIcon className="w-5 h-5" />}
                   <span>{isAdmin ? t.room.deleteRoom : t.room.leaveRoom}</span>
                 </button>
               </div>
