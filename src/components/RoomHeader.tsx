@@ -15,9 +15,10 @@ import NameModal from '@/components/NameModal';
 interface RoomSettingsProps {
   onLeaveRoom: () => void;
   onUpdateName?: (newName: string) => Promise<void>;
+  isAdmin?: boolean;
 }
 
-export default function RoomHeader({ onLeaveRoom, onUpdateName }: RoomSettingsProps) {
+export default function RoomHeader({ onLeaveRoom, onUpdateName, isAdmin = false }: RoomSettingsProps) {
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -313,7 +314,7 @@ export default function RoomHeader({ onLeaveRoom, onUpdateName }: RoomSettingsPr
                 {/* Divider */}
                 <div className={`my-1 border-t ${theme === 'dark' ? 'border-slate-700/70' : 'border-purple-100'}`}></div>
 
-                {/* Odadan Ayrılma */}
+                {/* Odadan Ayrılma / Odayı Silme */}
                 <button
                   onClick={onLeaveRoom}
                   className={`flex items-center gap-3 w-full p-2 rounded-lg text-left text-sm transition-colors ${theme === 'dark'
@@ -322,7 +323,7 @@ export default function RoomHeader({ onLeaveRoom, onUpdateName }: RoomSettingsPr
                     }`}
                 >
                   <ArrowLeftOnRectangleIcon className="w-5 h-5" />
-                  <span>{t.room.leaveRoom}</span>
+                  <span>{isAdmin ? t.room.deleteRoom : t.room.leaveRoom}</span>
                 </button>
               </div>
             </motion.div>

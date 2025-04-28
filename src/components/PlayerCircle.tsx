@@ -13,6 +13,9 @@ interface User {
   isAdmin: boolean;
   joinedAt: string;
   sessionId?: string;
+  userId?: string;
+  isConnected?: boolean;
+  deletedAt?: string;
 }
 
 interface PlayerCircleProps {
@@ -31,7 +34,13 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
   // Kullanıcıları joinedAt zamanına göre sıralıyoruz, böylece sıralama sabit kalır
   const userList = useMemo(() => {
     return Object.entries(users)
-      .filter(([, user]) => user && user.name) // Geçersiz kullanıcıları filtrele
+      .filter(([, user]) => {
+        // Geçersiz, bağlantısı olmayan ve silinmiş kullanıcıları filtrele
+        return user &&
+          user.name &&
+          (user.isConnected !== false) &&
+          (!user.deletedAt);
+      })
       .map(([key, user]) => ({
         key,
         ...user,
@@ -85,7 +94,7 @@ export default function PlayerCircle({ users, votes, revealed, onReveal, onReset
                   transition-all duration-300
                 `}>
                   {revealed && hasVoted ? (
-                    <div className={`font-bold ${revealed ? 'text-base' : 'text-2xl'} text-white`}>{user.vote}</div>
+                    <div className={`font-bold text-3xl text-white`}>{user.vote}</div>
                   ) : hasVoted ? (
                     <CheckIcon className={`${revealed ? 'w-8 h-8' : 'w-14 h-14'} text-white`} />
                   ) : (

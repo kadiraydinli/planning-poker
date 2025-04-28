@@ -94,7 +94,8 @@ export default function Home() {
           name: name,
           isAdmin: true,
           joinedAt: new Date().toISOString(),
-          sessionId: sessionId
+          sessionId: sessionId,
+          userId: userId
         }
       });
 

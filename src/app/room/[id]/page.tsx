@@ -32,6 +32,8 @@ interface User {
   joinedAt: string;
   sessionId?: string;
   userId?: string;
+  isConnected?: boolean;
+  deletedAt?: string;
 }
 
 interface Users {
@@ -44,9 +46,8 @@ interface Room {
   votes: Vote;
   revealed: boolean;
   users: Users;
-  adminLeaving?: boolean;
-  adminLeavingTimestamp?: string;
   adminId?: string;
+  deletedAt?: string;
 }
 
 // Renk paleti - daha canlı ve doygun renkler
@@ -99,40 +100,36 @@ export default function RoomPage() {
     try {
       const roomId = id as string;
       const roomRef = doc(db, 'rooms', roomId);
-      const isAdmin = room?.users?.[userSessionRef.current.userKey]?.isAdmin || false;
 
-      if (isAdmin) {
-        // Admin için özel işlem (odadaki diğer kullanıcılara uyarı gönder)
-        if (room?.users && Object.values(room.users).length > 1) {
-          await updateDoc(roomRef, {
-            adminLeaving: true,
-            adminLeavingTimestamp: new Date().toISOString()
-          });
+      // Kullanıcının güncel bilgilerini alalım
+      const roomDoc = await getDoc(roomRef);
+      if (!roomDoc.exists()) return;
+
+      const roomData = roomDoc.data() as Room;
+      const updates: Record<string, ReturnType<typeof deleteField> | boolean | string> = {
+        [`users.${userSessionRef.current.userKey}.isConnected`]: false,
+        [`users.${userSessionRef.current.userKey}.deletedAt`]: new Date().toISOString()
+      };
+
+      // Kullanıcının oyunu da sil
+      if (userName && roomData.votes && roomData.votes[userName]) {
+        updates[`votes.${userName}`] = deleteField();
+      }
+
+      // Kullanıcının isConnected durumunu false olarak ayarla, deletedAt ekle ve oyunu sil
+      await updateDoc(roomRef, updates);
+
+      // Eğer oylar sıfırlandı ve revealed true ise, revealed'ı false yap
+      if (roomData.revealed) {
+        // Tüm oyları sayalım (kullanıcının oyunu zaten sildik)
+        const remainingVotes = Object.keys(roomData.votes).filter(
+          voter => voter !== userName
+        ).length;
+
+        // Eğer başka oy yoksa, revealed'ı false yap
+        if (remainingVotes === 0) {
+          await updateDoc(roomRef, { revealed: false });
         }
-
-        // Admin odadan çıkarken kendisini de odadan kaldır
-        const updates: Record<string, ReturnType<typeof deleteField> | string | boolean> = {};
-        updates[`users.${userSessionRef.current.userKey}`] = deleteField();
-
-        // Eğer adminin oyu varsa, onu da sil
-        if (userName && room?.votes && room.votes[userName]) {
-          updates[`votes.${userName}`] = deleteField();
-        }
-
-        // Firestore güncellemesini yap
-        await updateDoc(roomRef, updates);
-      } else {
-        // Normal kullanıcı için kullanıcı bilgisini ve oylarını sil
-        const updates: Record<string, ReturnType<typeof deleteField>> = {};
-        updates[`users.${userSessionRef.current.userKey}`] = deleteField();
-
-        // Eğer kullanıcının oyu varsa, sil
-        if (userName && room?.votes && room.votes[userName]) {
-          updates[`votes.${userName}`] = deleteField();
-        }
-
-        // Firestore güncellemesini yap
-        await updateDoc(roomRef, updates);
       }
     } catch (error) {
       console.error('Error in auto leave room:', error);
@@ -151,6 +148,23 @@ export default function RoomPage() {
     // Her oturum için session id oluştur
     if (!localStorage.getItem(`planningPokerSession_${roomId}`)) {
       localStorage.setItem(`planningPokerSession_${roomId}`, nanoid(16));
+
+      // UserId'yi de localStorage'a kaydedelim
+      if (userId) {
+        localStorage.setItem(`planningPokerUserId_${roomId}`, userId);
+      }
+    } else {
+      // Eğer önceki oturumdan userId varsa, onu kullanalım
+      if (!userId && localStorage.getItem(`planningPokerUserId_${roomId}`)) {
+        // Önceki userId'yi kullanalım
+        const storedUserId = localStorage.getItem(`planningPokerUserId_${roomId}`);
+        if (storedUserId) {
+          console.log('Önceki userId kullanılıyor:', storedUserId);
+        }
+      } else if (userId) {
+        // Güncel userId'yi kaydedelim
+        localStorage.setItem(`planningPokerUserId_${roomId}`, userId);
+      }
     }
 
     userSessionRef.current.sessionId = localStorage.getItem(`planningPokerSession_${roomId}`) || nanoid(16);
@@ -194,10 +208,10 @@ export default function RoomPage() {
       if (docSnap.exists()) {
         const roomData = docSnap.data() as Room;
 
-        // Admin çıkış yapıyor mesajını kontrol et
-        if (roomData.adminLeaving && !userSessionRef.current.isLeaving) {
-          // Admin odayı kapatıyor, kullanıcıyı bilgilendir ve ana sayfaya yönlendir
-          toast.error(t.room.adminClosingRoom);
+        // Oda silinmiş mi kontrol et
+        if (roomData.deletedAt && !userSessionRef.current.isLeaving) {
+          // Oda silinmiş, kullanıcıyı bilgilendir ve ana sayfaya yönlendir
+          toast.error(t.room.roomClosed);
           userSessionRef.current.isLeaving = true;
           router.push('/');
           return;
@@ -212,6 +226,14 @@ export default function RoomPage() {
         } else if (roomData.votes && Object.keys(roomData.votes).length === 0) {
           // Eğer oy yoksa (oylar sıfırlanmışsa), selectedPoint'i null yap
           setSelectedPoint(null);
+
+          // Eğer revealed true ise ve oy sayısı 0 ise, revealed'ı false yap
+          if (roomData.revealed) {
+            const roomRef = doc(db, 'rooms', roomId);
+            await updateDoc(roomRef, {
+              revealed: false
+            });
+          }
         }
 
         setPoints(getScaleValues(roomData.scaleType));
@@ -232,6 +254,15 @@ export default function RoomPage() {
             // Kullanıcı adı yoksa ama session varsa, o kullanıcı adını kullan
             if (!userName && (existingUser[1] as User).name) {
               setUserName((existingUser[1] as User).name);
+            }
+
+            // Eğer kullanıcının isConnected durumu false ise, true yapalım
+            if ((existingUser[1] as User).isConnected === false || (existingUser[1] as User).deletedAt) {
+              const roomRef = doc(db, 'rooms', roomId);
+              await updateDoc(roomRef, {
+                [`users.${existingUser[0]}.isConnected`]: true,
+                [`users.${existingUser[0]}.deletedAt`]: deleteField()
+              });
             }
           }
           else if (userName && !userSessionRef.current.isLeaving) {
@@ -301,13 +332,39 @@ export default function RoomPage() {
       const newUserKey = nanoid(8);
       const roomRef = doc(db, 'rooms', roomId);
 
+      // Aynı userId ile daha önce bir kullanıcı var mı kontrol et
+      const roomDoc = await getDoc(roomRef);
+      if (roomDoc.exists()) {
+        const roomData = roomDoc.data() as Room;
+        if (roomData.users) {
+          const existingUserEntry = Object.entries(roomData.users).find(
+            ([, user]) => user.userId === userId
+          );
+
+          if (existingUserEntry) {
+            // Kullanıcı zaten var, isConnected değerini güncelle
+            const [existingUserKey] = existingUserEntry;
+            await updateDoc(roomRef, {
+              [`users.${existingUserKey}.isConnected`]: true,
+              [`users.${existingUserKey}.sessionId`]: sessionId,
+              [`users.${existingUserKey}.name`]: name,
+              [`users.${existingUserKey}.deletedAt`]: deleteField()
+            });
+            userSessionRef.current.userKey = existingUserKey;
+            return existingUserKey;
+          }
+        }
+      }
+
+      // Yeni kullanıcı oluştur
       await updateDoc(roomRef, {
         [`users.${newUserKey}`]: {
           name: name,
           isAdmin: isAdmin,
           joinedAt: new Date().toISOString(),
           sessionId: sessionId,
-          userId: userId
+          userId: userId,
+          isConnected: true
         }
       });
 
@@ -479,34 +536,12 @@ export default function RoomPage() {
       if (isAdmin) {
         // Admin için işlem
         try {
-          if (room?.users && Object.values(room.users).length > 1) {
-            // Odada başka kullanıcılar varsa, uyarı mesajı göndermeyi dene
-            try {
-              // Diğer kullanıcıları uyarmak için özel bir flag ekle
-              await updateDoc(roomRef, {
-                adminLeaving: true,
-                adminLeavingTimestamp: new Date().toISOString()
-              });
+          // Admin odayı siliyor
+          await updateDoc(roomRef, {
+            deletedAt: new Date().toISOString(),
+          });
 
-              // Diğer kullanıcıların uyarıyı almalarına zaman tanı
-              await new Promise(resolve => setTimeout(resolve, 500));
-            } catch (error) {
-              console.log('Error sending admin leaving message:', error);
-            }
-          }
-
-          // Admin odadan çıkarken kendisini kaldır ama odayı silme
-          const updates: Record<string, ReturnType<typeof deleteField>> = {};
-          updates[`users.${userSessionRef.current.userKey}`] = deleteField();
-
-          // Eğer adminin oyu varsa, onu da sil
-          if (userName && room?.votes && room.votes[userName]) {
-            updates[`votes.${userName}`] = deleteField();
-          }
-
-          // Firestore güncellemesini yap
-          await updateDoc(roomRef, updates);
-          toast.success(t.room.leftRoom);
+          toast.success(t.room.deletedRoom);
 
           // Başarılı olursa localStorage'dan session ID'yi sil
           localStorage.removeItem(`planningPokerSession_${roomId}`);
@@ -514,7 +549,7 @@ export default function RoomPage() {
           // Ana sayfaya yönlendir
           router.push('/');
         } catch (error) {
-          console.error('Error leaving room as admin:', error);
+          console.error('Error deleting room:', error);
           toast.error(t.room.error);
 
           // Hata olursa da çıkış yap
@@ -522,7 +557,7 @@ export default function RoomPage() {
           router.push('/');
         }
       } else {
-        // Normal kullanıcı için kullanıcı bilgisini ve oylarını sil (bu kısmı aynı)
+        // Normal kullanıcı için kullanıcı bilgisini güncelle
         try {
           const roomDoc = await getDoc(roomRef);
 
@@ -534,10 +569,10 @@ export default function RoomPage() {
           }
 
           const roomData = roomDoc.data();
-          const updates: Record<string, ReturnType<typeof deleteField>> = {};
-
-          // users objesinden kullanıcı anahtarını sil (deleteField kullan)
-          updates[`users.${userSessionRef.current.userKey}`] = deleteField();
+          const updates: Record<string, ReturnType<typeof deleteField> | boolean | string> = {
+            [`users.${userSessionRef.current.userKey}.isConnected`]: false,
+            [`users.${userSessionRef.current.userKey}.deletedAt`]: new Date().toISOString()
+          };
 
           // Eğer kullanıcının oyu varsa, sil
           if (userName && roomData.votes && roomData.votes[userName]) {
@@ -628,6 +663,7 @@ export default function RoomPage() {
       <RoomHeader
         onLeaveRoom={handleLeaveRoom}
         onUpdateName={handleUpdateName}
+        isAdmin={room?.users?.[userSessionRef.current.userKey || '']?.isAdmin || false}
       />
       <div className="fixed top-4 right-4 z-10 flex items-center gap-2">
       </div>
@@ -809,16 +845,20 @@ export default function RoomPage() {
         loadingText={t.room.joining}
       />
 
-      {/* Odadan Çıkış Onay Modalı */}
+      {/* Odadan Çıkış veya Odayı Silme Onay Modalı */}
       <ConfirmModal
         isOpen={showLeaveConfirmModal}
         onClose={() => setShowLeaveConfirmModal(false)}
         onConfirm={() => leaveRoomAction(room?.users?.[userSessionRef.current.userKey || '']?.isAdmin || false)}
-        title={t.room.confirmLeave}
+        title={room?.users?.[userSessionRef.current.userKey || '']?.isAdmin
+          ? t.room.confirmDeleteRoomTitle
+          : t.room.confirmLeaveTitle}
         message={room?.users?.[userSessionRef.current.userKey || '']?.isAdmin
-          ? t.room.confirmLeaveAdmin
-          : "Odadan ayrılmak istediğinize emin misiniz? Oyunuza verdiğiniz oylar silinecektir."}
-        confirmButtonText={t.room.leaveRoom}
+          ? t.room.confirmDeleteRoomDescription
+          : t.room.confirmLeaveDescription}
+        confirmButtonText={room?.users?.[userSessionRef.current.userKey || '']?.isAdmin
+          ? t.room.deleteRoom
+          : t.room.leaveRoom}
         isLoading={isLeavingRoom}
       />
     </main>
