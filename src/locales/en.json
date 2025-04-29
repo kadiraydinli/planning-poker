@@ -97,6 +97,10 @@
     "roomClosed": "Room has been closed",
     "roomMayBeClosed": "The room you are looking for doesn't exist or may have been closed.",
     "adminClosingRoom": "The manager left the room!",
-    "userExists": "User with this name already exists in the room"
+    "userExists": "User with this name already exists in the room",
+    "onlyAdminCanChange": "Only room admin can change chart type",
+    "switchToPieChart": "Switch to pie chart",
+    "switchToBarChart": "Switch to bar chart",
+    "chartTypeChanged": "Chart type has been changed"
   }
 }

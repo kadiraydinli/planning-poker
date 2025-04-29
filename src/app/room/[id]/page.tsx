@@ -612,6 +612,9 @@ export default function RoomPage() {
         <VoteResults
           revealed={room.revealed}
           votes={room.votes}
+          roomId={id as string}
+          chartType={room.chartType || 'pie'}
+          isAdmin={room?.users?.[userSessionRef.current.userKey || '']?.isAdmin || false}
         />
       </div>
 

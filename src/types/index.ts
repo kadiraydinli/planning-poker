@@ -26,6 +26,7 @@ export interface Room {
   users: Users;
   adminId?: string;
   deletedAt?: string;
+  chartType?: 'pie' | 'bar';
 }
 
 export interface VoteDataItem {

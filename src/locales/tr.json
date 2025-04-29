@@ -97,6 +97,10 @@
     "roomClosed": "Oda kapatıldı",
     "roomMayBeClosed": "Aradığınız oda mevcut değil veya kapatılmış olabilir.",
     "adminClosingRoom": "Yönetici odadan ayrıldı!",
-    "userExists": "Bu isimde bir kullanıcı zaten odada mevcut"
+    "userExists": "Bu isimde bir kullanıcı zaten odada mevcut",
+    "onlyAdminCanChange": "Grafik türünü yalnızca oda yöneticisi değiştirebilir",
+    "switchToPieChart": "Pasta grafiğine geç",
+    "switchToBarChart": "Çubuk grafiğine geç",
+    "chartTypeChanged": "Grafik türü değiştirildi"
   }
 }
