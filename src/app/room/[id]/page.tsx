@@ -4,9 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, updateDoc, getDoc, deleteField, FieldValue } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { nanoid } from 'nanoid';
-import { motion, AnimatePresence } from 'framer-motion';
 
 import { db } from '@/lib/firebase';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,48 +19,8 @@ import RoomNotFound from '@/components/RoomNotFound';
 import ConfirmModal from '@/components/ConfirmModal';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
 import RoomHeader from '@/components/RoomHeader';
-
-interface Vote {
-  [key: string]: string;
-}
-
-interface User {
-  name: string;
-  isAdmin: boolean;
-  joinedAt: string;
-  sessionId?: string;
-  userId?: string;
-  isConnected?: boolean;
-  deletedAt?: string;
-}
-
-interface Users {
-  [key: string]: User;
-}
-
-interface Room {
-  name: string;
-  scaleType: string;
-  votes: Vote;
-  revealed: boolean;
-  users: Users;
-  adminId?: string;
-  deletedAt?: string;
-}
-
-// Renk paleti - daha canlı ve doygun renkler
-const COLORS = [
-  '#0066FF', // mavi
-  '#FFD700', // altın
-  '#FF1493', // pembe
-  '#00BFFF', // açık mavi
-  '#00FF7F', // yeşil
-  '#FF4500', // turuncu-kırmızı
-  '#9932CC', // mor
-  '#FF8C00', // turuncu
-  '#D4A76A', // kahve rengi (☕)
-  '#E879F9'  // mor-pembe (?)
-];
+import VoteResults from '@/components/VoteResults';
+import { Room, User } from '@/types';
 
 export default function RoomPage() {
   const { id } = useParams();
@@ -613,33 +571,6 @@ export default function RoomPage() {
     );
   }
 
-  // Oyları gruplandır: Kaç kişi hangi puanı vermiş
-  const groupedVotes: { [key: string]: number } = {};
-  Object.values(room.votes).forEach((point) => {
-    if (!point) return;
-    groupedVotes[point] = (groupedVotes[point] || 0) + 1;
-  });
-
-  // Gruplandırılmış oyları Pie Chart verisi formatına çevir
-  const voteData = Object.entries(groupedVotes).map(([point, count]) => ({
-    name: point,
-    value: count,
-    point: point,
-    count: count
-  })).sort((a, b) => parseFloat(a.point) - parseFloat(b.point)); // Puanlara göre sırala
-
-  const calculateAverageScore = (votes: Vote): number => {
-    const validVotes = Object.values(votes).filter(vote => {
-      // Herhangi bir sayısal olmayan değeri veya NaN sonucu veren değerleri filtrele
-      return !isNaN(parseFloat(vote)) && isFinite(parseFloat(vote));
-    });
-
-    if (validVotes.length === 0) return 0;
-
-    const totalScore = validVotes.reduce((total, point) => total + parseFloat(point), 0);
-    return totalScore / validVotes.length;
-  };
-
   return (
     <main className={`min-h-screen max-h-screen overflow-hidden ${theme === 'dark' ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'} p-4`}>
       {/* Konfeti Efekti */}
@@ -678,126 +609,10 @@ export default function RoomPage() {
           />
         </div>
 
-        {/* Pie Chart - Sadece revealed durumunda gösterilir */}
-        <AnimatePresence>
-          {room.revealed && (
-            <motion.div
-              className={`absolute top-[70%] right-[64px] w-[40%] md:w-[25%] transform -translate-y-1/2 ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white'} rounded-2xl shadow-xl p-6`}
-              initial={{ opacity: 0, x: 200 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 100 }}
-              transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.2 }}
-              style={{ maxHeight: "60vh", overflowY: "auto" }}
-            >
-              <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 text-center`}>
-                {t.common.voteResults}
-              </h2>
-
-              {/* Pie Chart ve Ortalama göster */}
-              <div className="flex flex-col items-center">
-                {/* Pie Chart */}
-                <div className="w-full max-w-md h-64 mb-4 p-2 rounded-xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={voteData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={90}
-                        innerRadius={60}
-                        fill="#8884d8"
-                        paddingAngle={1.5}
-                        dataKey="value"
-                        label={false}
-                        animationDuration={800}
-                        animationBegin={0}
-                      >
-                        {voteData.map((entry, i) => {
-                          // Kahve fincanı ve soru işareti için özel renkler kullan
-                          let colorIndex;
-                          if (entry.point === '☕') {
-                            colorIndex = 8; // Kahve rengi (COLORS[8])
-                          } else if (entry.point === '?') {
-                            colorIndex = 9; // Mor-pembe (COLORS[9])
-                          } else {
-                            colorIndex = Math.abs(parseInt(entry.point)) % 8; // İlk 8 rengi kullan
-                          }
-
-                          return <Cell
-                            key={`cell-${i}`}
-                            fill={COLORS[colorIndex]}
-                            strokeWidth={1}
-                            stroke={'rgba(255,255,255,0.6)'}
-                          />;
-                        })}
-                      </Pie>
-                      {/* Ortadaki ortalama puan bilgisi */}
-                      <text
-                        x="50%"
-                        y="45%"
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="text-xs font-normal"
-                        fill={theme === 'dark' ? '#9ca3af' : '#64748b'}
-                      >
-                        {t.common.average}
-                      </text>
-                      <text
-                        x="50%"
-                        y="58%"
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="text-3xl font-bold"
-                        fill={theme === 'dark' ? '#ffffff' : '#0f172a'}
-                      >
-                        {calculateAverageScore(room.votes).toFixed(1)}
-                      </text>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Renk açıklamaları */}
-                <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mt-4">
-                  {voteData.map((entry, i) => {
-                    // Kahve fincanı ve soru işareti için özel renkler kullan
-                    let colorIndex;
-                    if (entry.point === '☕') {
-                      colorIndex = 8; // Kahve rengi (COLORS[8])
-                    } else if (entry.point === '?') {
-                      colorIndex = 9; // Mor-pembe (COLORS[9])
-                    } else {
-                      colorIndex = Math.abs(parseInt(entry.point)) % 8; // İlk 8 rengi kullan
-                    }
-
-                    return (
-                      <motion.div
-                        key={`legend-${i}`}
-                        className="flex flex-col items-center"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 + (i * 0.1), duration: 0.4 }}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: COLORS[colorIndex] }}
-                          ></div>
-                          <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>
-                            {entry.point}
-                          </span>
-                        </div>
-                        <span className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-                          {entry.count} {entry.count === 1 ? t.common.voteText : t.common.votesText}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <VoteResults
+          revealed={room.revealed}
+          votes={room.votes}
+        />
       </div>
 
       {/* Kart seçme alanı - ekranın altında sabitlenmiş */}

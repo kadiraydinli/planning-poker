@@ -3,24 +3,15 @@
 import { useMemo } from 'react';
 import { BsQuestion } from 'react-icons/bs';
 import { motion } from 'framer-motion';
+import { Users, Vote } from '@/types';
 
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CheckIcon } from '@heroicons/react/24/solid';
 
-interface User {
-  name: string;
-  isAdmin: boolean;
-  joinedAt: string;
-  sessionId?: string;
-  userId?: string;
-  isConnected?: boolean;
-  deletedAt?: string;
-}
-
 interface PlayerCircleProps {
-  users: { [key: string]: User };
-  votes: { [key: string]: string };
+  users: Users;
+  votes: Vote;
   revealed: boolean;
   onReveal: () => void;
   onReset: () => void;

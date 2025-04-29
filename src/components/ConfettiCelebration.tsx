@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { Vote } from '@/types';
 
 // Client tarafında yüklenecek ReactConfetti bileşeni
 const ReactConfetti = dynamic(() => import('react-confetti'), {
   ssr: false
 });
-
-interface Vote {
-  [key: string]: string;
-}
 
 interface ConfettiCelebrationProps {
   votes: Vote;
