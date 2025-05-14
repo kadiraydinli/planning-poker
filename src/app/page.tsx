@@ -11,10 +11,12 @@ import NameModal from '@/components/NameModal';
 import DecorativeElements from '@/assets/components/DecorativeElements';
 import SpinnerIcon from '@/assets/icons/SpinnerIcon';
 
+export const runtime = 'edge';
+
 export default function Home() {
   const { t } = useLanguage();
   const { theme } = useTheme();
-  
+
   const {
     roomName,
     setRoomName,

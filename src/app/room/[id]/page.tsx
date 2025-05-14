@@ -22,6 +22,8 @@ import RoomHeader from '@/components/RoomHeader';
 import VoteResults from '@/components/VoteResults';
 import { Room, User } from '@/types';
 
+export const runtime = 'edge';
+
 export default function RoomPage() {
   const { id } = useParams();
   const router = useRouter();
