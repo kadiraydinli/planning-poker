@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "firebase": "^11.7.3",
-    "framer-motion": "^12.12.1",
+    "firebase": "^11.8.1",
+    "framer-motion": "^12.12.2",
     "next": "15.3.2",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
