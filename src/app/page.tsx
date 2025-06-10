@@ -8,7 +8,7 @@ import { scrumScales } from '@/lib/scaleTypes';
 import { useRoom } from '@/hooks/useRoom';
 import Header from '@/components/Header';
 import NameModal from '@/components/NameModal';
-import DecorativeElements from '@/assets/components/DecorativeElements';
+import DecorativeElements from '@/components/DecorativeElements';
 import SpinnerIcon from '@/assets/icons/SpinnerIcon';
 
 export const runtime = 'edge';

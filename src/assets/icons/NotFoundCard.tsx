@@ -2,7 +2,7 @@
 
 import { useTheme } from '@/contexts/ThemeContext';
 
-export default function NotFoundCardsSvg() {
+export default function NotFoundCard() {
   const { theme } = useTheme();
 
   return (
